@@ -3106,6 +3106,7 @@
       USE SWCOMM4                                                         40.41
       USE M_GENARR                                                        40.31
       USE SwanGriddata                                                    40.80
+!NC      use m_netcdfio
 !
 !
 !
@@ -3366,10 +3367,15 @@
          ALLOCATE( TARR(MXG(IGR1)*MYG(IGR1)) )                            40.41
          TARR = 0.                                                        40.41
       END IF                                                              40.41
-      CALL INAR2D( TARR        , MXG(IGR1), MYG(IGR1), IFLNDF(IGR1),      40.31 40.02
-     &             IFLNDS(IGR1), IFLIFM(IGR1), IFLFRM(IGR1),
-     &             IFLIDL(IGR1), IFLFAC(IGR1),
-     &             IFLNHD(IGR1), IFLNHF(IGR1))
+! TODO: waarde iflifm vastleggen als code voor NetCDF formaat
+!NC      IF (IFLIFM(IGR1) == 99) THEN
+!NC         CALL SRDNC(TARR        , MXG(IGR1), MYG(IGR1), IGR1 )
+!NC      ELSE
+        CALL INAR2D( TARR        , MXG(IGR1), MYG(IGR1), IFLNDF(IGR1),   40.31 40.02
+     &               IFLNDS(IGR1), IFLIFM(IGR1), IFLFRM(IGR1),
+     &               IFLIDL(IGR1), IFLFAC(IGR1),
+     &               IFLNHD(IGR1), IFLNHF(IGR1))
+!NC      END IF
       IF (STPNOW()) RETURN                                                34.01
       IF (IGR1.EQ.1) THEN                                                 40.31
          IF (.NOT.ALLOCATED(DEPTH)) ALLOCATE(DEPTH(MXG(IGR1)*MYG(IGR1)))  40.31
@@ -3401,11 +3407,15 @@
         IF (.NOT.ALLOCATED(TARR)) THEN                                    40.41
            ALLOCATE( TARR(MXG(IGR2)*MYG(IGR2)) )                          40.41
            TARR = 0.                                                      40.41
-        END IF                                                            40.41
-        CALL INAR2D( TARR        , MXG(IGR2), MYG(IGR2), IFLNDF(IGR2),    40.31 40.02
-     &               IFLNDS(IGR2), IFLIFM(IGR2), IFLFRM(IGR2),
-     &               IFLIDL(IGR2), IFLFAC(IGR2),
-     &               IFLNHD(IGR2), 0)
+        END IF
+!NC        IF (IFLIFM(IGR2) == 99) THEN
+!NC           CALL SRDNC(TARR        , MXG(IGR2), MYG(IGR2), IGR2 )
+!NC        ELSE
+           CALL INAR2D( TARR        , MXG(IGR2), MYG(IGR2),IFLNDF(IGR2),  40.31 40.02
+     &                  IFLNDS(IGR2), IFLIFM(IGR2), IFLFRM(IGR2),
+     &                  IFLIDL(IGR2), IFLFAC(IGR2),
+     &                  IFLNHD(IGR2), 0)
+!NC        END IF
         IF (STPNOW()) RETURN                                              34.01
         IF (IGR2.EQ.3) THEN                                               40.31
            IF (.NOT.ALLOCATED(UYB)) ALLOCATE(UYB(MXG(IGR2)*MYG(IGR2)))    40.31
@@ -4907,6 +4917,7 @@
       USE TIMECOMM                                                        40.41
       USE M_PARALL                                                        40.31
       USE SwanGriddata                                                    40.80
+!NC      use m_netcdfio
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -5153,6 +5164,11 @@
         NPTOT = JXMAX*JYMAX                                               40.80
         IF (OPTG.EQ.5) NPTOT = nverts                                     40.80
         CALL INCSTR ('FNAME', FILENM, 'REQ', ' ')
+!NC!       read netcdf formatted files if filename contains string '.nc'
+!NC        IF ( INDEX( FILENM, '.nc' ) .NE. 0 ) THEN
+!NC           CALL READ_NETCDF_RESTART(NPTOT)
+!NC           GOTO 300
+!NC        END IF
 !       --- append node number to FILENM in case of parallel computing    40.31
         IF ( PARLL .AND. .NOT.SINGLEHOT ) THEN                            40.62 40.31
            ILPOS = INDEX ( FILENM, ' ' )-1                                40.31
@@ -5349,7 +5365,10 @@
               ENDIF
            ENDDO
         ENDIF                                                             40.80
-        CLOSE (NREF)
+        CLOSE (NREF) ! NREF=ascii hotstart file
+
+ 300    CONTINUE
+
       ELSE
 !       default initial wave state, will be computed later by subr SWINCO
         CALL IGNORE ('DEF')
@@ -5375,6 +5394,7 @@
       USE SWCOMM4                                                         40.41
       USE M_PARALL                                                        40.31
       USE SwanGriddata                                                    40.80
+!NC      use m_netcdfio
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -5472,6 +5492,11 @@
 !     ==================================================================
 !
       CALL INCSTR ('FNAME', FILENM, 'REQ', ' ')
+!NC      IF (INDEX( FILENM, '.nc') .ne. 0 ) THEN
+!NC!        write restart file in NetCDF format and return
+!NC         call write_netcdf_restart()
+!NC         RETURN
+!NC      END IF
 !     --- append node number to FILENM in case of parallel computing      40.31
       IF ( PARLL ) THEN                                                   40.31
          ILPOS = INDEX ( FILENM, ' ' )-1                                  40.31

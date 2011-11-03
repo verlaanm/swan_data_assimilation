@@ -708,6 +708,9 @@
           IDFM = 0
         ELSE IF (KEYWIS('UNF')) THEN
           IDFM = -1
+        ELSE IF (KEYWIS('NC')) THEN
+! TODO: waarde iflifm vastleggen als code voor NetCDF formaat
+          IDFM = 99
         ELSE IF (KEYWIS('FOR')) THEN
 !         formatted read
           CALL ININTG ('IDFM', IDFM, 'NSKP', 2)
@@ -731,28 +734,31 @@
           CALL WRNKEY                                                     30.06
           IDFM = 0
         ENDIF
-!       --------------------------------------------------------
-!                          open the file
-!       --------------------------------------------------------
-        IF (IDFM.NE.-1) THEN
-          IOSTAT = 0
-          CALL FOR (NDSD, FILENM, 'OF', IOSTAT)                           40.00
-          IF (STPNOW()) RETURN                                            34.01
-          IF (NHEDF.GT.0) THEN                                            40.00
-            WRITE (PRINTF, '(A,A,A)') ' **  Heading lines file ',
-     &      TRIM(FILENM), ' **'                                           40.03
+
+        IF (IDFM.NE.99) THEN
+!         --------------------------------------------------------
+!                            open the file
+!         --------------------------------------------------------
+          IF (IDFM.NE.-1) THEN
+            IOSTAT = 0
+            CALL FOR (NDSD, FILENM, 'OF', IOSTAT)                         40.00
+            IF (STPNOW()) RETURN                                          34.01
+            IF (NHEDF.GT.0) THEN                                          40.00
+              WRITE (PRINTF, '(A,A,A)') ' **  Heading lines file ',
+     &        TRIM(FILENM), ' **'                                         40.03
+              DO IH=1, NHEDF
+                READ (NDSD, '(A80)') HEDLIN
+                WRITE (PRINTF, '(A4,A80)') ' -> ', HEDLIN                 40.00
+              ENDDO
+            ENDIF
+          ELSE
+            IOSTAT = 0
+            CALL FOR (NDSD, FILENM, 'OU', IOSTAT)                         40.00
+            IF (STPNOW()) RETURN                                          34.01
             DO IH=1, NHEDF
-              READ (NDSD, '(A80)') HEDLIN
-              WRITE (PRINTF, '(A4,A80)') ' -> ', HEDLIN                   40.00
+              READ (NDSD)                                                 40.00
             ENDDO
           ENDIF
-        ELSE
-          IOSTAT = 0
-          CALL FOR (NDSD, FILENM, 'OU', IOSTAT)                           40.00
-          IF (STPNOW()) RETURN                                            34.01
-          DO IH=1, NHEDF
-            READ (NDSD)                                                   40.00
-          ENDDO
         ENDIF
       ENDIF
       RETURN

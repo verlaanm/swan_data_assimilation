@@ -189,6 +189,7 @@
       USE OUTP_DATA                                                       40.31
       USE M_PARALL                                                        40.31
       USE SwanGriddata                                                    40.80
+!NC      USE M_NETCDFIO
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -551,6 +552,7 @@
           NDS    = 0
           PP     = .TRUE.
           CALL INCSTR ('FNAME', FILENM, 'REQ', ' ')
+!NC          STATNAMES = FILENM
           CALL FOR (NDS, FILENM, 'OF', IOSTAT)                            10.31
           IF (STPNOW()) RETURN                                            34.01
         ELSE
@@ -2579,6 +2581,7 @@
            CALL WRNKEY                                                    40.05
         ENDIF                                                             40.05
 
+!TODO: inlezen rvw spectra
         CALL BCFILE (FILENM, 'NEST', BFLTMP, LBGP,                        40.31
      &               XCGRID, YCGRID, KGRPNT, XYTST,  KGRBND,              40.31
      &               DONALL)                                              40.05

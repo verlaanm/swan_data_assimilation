@@ -1,0 +1,1367 @@
+!------------------------------------------------------------------------
+module m_netcdfio
+!------------------------------------------------------------------------
+! Als $NETCDF_ROOT door de gebruiker wordt gezet voor de aanroep van
+! make config
+! dan zorgt het make systeem ervoor dat de tekens !NC aan het begin
+! van de regel worden verwijderd.
+!
+! Als $NETCDF_ROOT niet wordt gezet bevat deze module dummy routines.
+!------------------------------------------------------------------------
+! copyright/author statements
+!------------------------------------------------------------------------
+
+use netcdf
+use ocpcomm2
+
+implicit none
+
+!------------------------------------------------------------------------
+! Exported routines
+
+! Read restart file in NetCDF formaat
+public read_netcdf_restart
+! Write restart file in NetCDF formaat
+public write_netcdf_restart
+! Read 2D maps from NetCDF file
+public srdnc
+! Write 2D maps to NetCDF file
+public swrnc
+! Write spectra to NetCDF file
+public swspec_nc
+! Write POINTS to NetCDF file
+public sncpnt
+
+!------------------------------------------------------------------------
+! Exported variables
+character(len=lenfnm), public :: statnames
+
+!------------------------------------------------------------------------
+! Internal constants
+
+! length of message string
+integer, parameter, private :: strlength = 80
+
+!------------------------------------------------------------------------
+! Internal variables
+
+! netCDF ID
+integer, private :: ncid
+! flag for status of NetCDF call
+integer, private :: status
+! general string
+character (len = strlength), private :: msgstr
+! return arguments for dimension ID
+integer, private :: timeDimID, xDimID, yDimID, xyDimID, sigmaDimID, thetaDimID
+integer, private :: nameDimID
+
+contains
+
+!------------------------------------------------------------------------
+! write restart file in NetCDF formaat
+subroutine read_netcdf_restart(nptot)
+!------------------------------------------------------------------------
+use swcomm2
+use swcomm3
+use ocpcomm4
+use m_genarr
+
+implicit none
+
+!------------------------------------------------------------------------
+! number of expected points
+integer :: nptot
+
+!------------------------------------------------------------------------
+! Local variables
+!
+! return arguments for variable IDs
+integer :: rfreqID, cdirID, maxspecID, specID
+! loop counters
+integer :: ix, iy, id, is
+! index variables
+integer :: indx, j, iid
+! logical function to compare two real values
+logical :: eqreal
+! number of records presents for different variables
+integer :: numxpts, numypts, numpts, numfreq, numdir
+! help arrays for reading data
+integer, dimension(:,:), allocatable :: mydata
+real, dimension(:), allocatable :: ACmax
+
+!------------------------------------------------------------------------
+! Start of source code
+
+!NC   ! initialisation
+!NC   status = 0
+!NC   iid = 0
+!NC   !
+!NC   if (itest >= 50) &
+!NC      write(*,*) 'read_netcdf_restart: writing of test output not implemented'
+!NC   !if (iiopt >= 0. ) &
+!NC   !   write(*,*) 'read_netcdf_restart: only stationary restart files allowed'
+!NC   if (optg == 5) &
+!NC      write(*,*) 'read_netcdf_restart: unstructered grid not implemented'
+
+!NC   ! Open the file
+!NC   status = nf90_open(filenm, nf90_nowrite, ncid)
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Read global attributes
+!NC   status = nf90_get_att(ncid, NF90_GLOBAL, "Source", msgstr)
+!NC   if (status /= nf90_noerr) write(*,*) 'source = ', msgstr
+!NC   if (msgstr(1:4) .ne. 'SWAN') &
+!NC      call msgerr (3,filenm// ' is not a correct hotstart file')
+!NC   ! TODO: nstatm optie?
+
+!        IF (EQCSTR(RLINE,'TIME')) THEN
+!          READ (NREF, *) IIOPT
+!          READ (NREF, 102) RLINE
+!!         in stationary mode, warning
+!          IF (NSTATM.EQ.0) CALL MSGERR (1,
+!     &                  'Time info in hotfile ignored')                   40.03
+!        ELSE
+!          IIOPT = -1
+!          IF (NSTATM.EQ.1) CALL MSGERR (1,
+!     &                  'No time info in hotfile')                        40.03
+!        ENDIF
+!NC   status = nf90_get_att(ncid, NF90_GLOBAL, "Grid", msgstr)
+!NC   if (status /= nf90_noerr .or. msgstr(1:6) .ne. 'lonlat') then
+!NC      write(*,*) 'something wrong with restart file'
+!NC   end if
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Read and check dimensions of restart file
+!NC   status = nf90_inq_dimid(ncid, "x", xDimID)
+!NC   status = nf90_inquire_dimension(ncid, xDimID, len = numxpts)
+!NC   if (numxpts /= MXC) &
+!NC      call msgerr(2, 'incorrect number of x-points in netcdf restart file')
+
+!NC   status = nf90_inq_dimid(ncid, "y", yDimID)
+!NC   status = nf90_inquire_dimension(ncid, yDimID, len = numypts)
+!NC   if (numypts /= MYC) &
+!NC      call msgerr(2, 'incorrect number of y-points in netcdf restart file')
+
+!NC   status = nf90_inq_dimid(ncid, "xy", xyDimID)
+!NC   status = nf90_inquire_dimension(ncid, xyDimID, len = numpts)
+!NC   if (numpts /= nptot) then
+!NC      call msgerr(2, 'grid on hotstart file differs from one in CGRID command')
+!NC      write(printf, fmt = &
+!NC        '(1X, I8, '' points in comp.grid; on file:'', I8)') nptot, numpts
+!NC   end if
+
+!NC   status = nf90_inq_dimid(ncid, "sigma", sigmaDimID)
+!NC   status = nf90_inquire_dimension(ncid, sigmaDimID, len = numfreq)
+!NC   if (numfreq /= MSC) &
+!NC      call msgerr(2, 'grid on hotstart file differs from one in CGRID command')
+
+!NC   status = nf90_inq_dimid(ncid, "theta", thetaDimID)
+!NC   status = nf90_inquire_dimension(ncid, thetaDimID, len = numdir)
+!NC   if (numdir /= MDC) &
+!NC      call msgerr(2, 'grid on hotstart file differs from one in CGRID command')
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Read maximum energy density
+!NC   allocate(ACmax(numpts))
+!NC   status = nf90_inq_varid(ncid,"max_spectrum",maxspecId)
+!NC   status = nf90_get_var(ncid, maxspecId, ACmax , start = (/ 1 /), &
+!NC      count = (/ numpts /))
+
+!NC   ! multiply with factor to account for transition from
+!NC   ! energy/Hz/degr to energy/(2*pi rad/s)/rad
+!NC   ACmax = ACmax * 90. / (PI**2)
+
+!NC   ! Read spectral energy density
+!NC   allocate(mydata(MDC,MSC))
+!NC   status = nf90_inq_varid(ncid,"spectrum",specId)
+!NC   do ix = 1,MXC
+!NC      do iy = 1,MYC
+!NC         indx = kgrpnt(ix,iy)
+!NC         if (indx.eq. 1) then
+!NC            ! 'NODATA'
+!NC            if (ACmax(indx) > 0.) then
+!NC               call msgerr (2,'valid spectrum for non-existing grid point')
+!NC               write (printf, *) ix-1, iy-1
+!NC            endif
+!NC         else
+!NC            if (eqreal(ACmax(indx),0.) ) then
+!NC               ! 'ZERO'
+!NC               AC2(1:MDC,1:MSC,indx) = 0.
+!NC            else
+!NC               ! read spectral energy density for indx
+!NC               status = nf90_get_var(ncid, specID, mydata, &
+!NC                           start = (/ 1,1,indx /), &
+!NC                           count = (/ MDC, MSC,1 /))
+!NC               if (status /= nf90_noerr) write(*,*) 'problem with reading'
+!NC               ! and write to correct location in AC2
+!NC               do is = 1, MSC
+!NC                  do id = 1, MDC
+!NC                     j = MODULO ( iid - 1 + id , MDC ) + 1
+!NC                     AC2(j,is,indx) = ACmax(indx) * mydata(id,is)
+!NC                  end do
+!NC               end do
+!NC            end if
+!NC         end if
+!NC      end do
+!NC   end do
+!NC   deallocate(mydata)
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Close file
+!NC   status = nf90_close(ncid)
+!NC   if (status /= nf90_noerr) write(*,*) 'problem in read_netcdf_restart'
+
+end subroutine read_netcdf_restart
+
+!------------------------------------------------------------------------
+! write restart file in NetCDF formaat
+subroutine write_netcdf_restart
+!------------------------------------------------------------------------
+use swcomm1
+use swcomm2
+use swcomm3
+use swcomm4
+use m_genarr
+use outp_data, only: dec_spec
+
+implicit none
+!------------------------------------------------------------------------
+! Local variables
+!------------------------------------------------------------------------
+! return arguments for variable IDs
+integer :: xcgridID, ycgridID, rfreqID, cdirID, maxspecID, specID
+! loop counters
+integer :: ix, iy, id, is
+! index variable
+integer :: indx
+! logical function to compare two real values
+logical :: eqreal
+! help array for writing data
+real, dimension(:,:), allocatable :: mydata
+! help array to write energy spectrum
+real, dimension(:), allocatable :: ACmax
+integer, dimension(:,:), allocatable :: specdata
+! help variable to compute maximum spectral density
+real :: efac
+
+!------------------------------------------------------------------------
+! Start of source code
+!NC   status = 0
+
+!NC   ! Open file in overwrite mode
+!NC   status = nf90_create(path = filenm, cmode = NF90_WRITE, ncid = ncid)
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Define the dimensions
+!NC   !     geen dimensie tijd nodig, want restart file is altijd een moment
+!NC   !     -opname
+!NC   ! maar moet optie nstatm wel bewaard worden?
+
+!NC   if (kspher == 0) then
+!NC      write(*,*) 'write_netcdf_restart: cartesian coordinates not yet implemented'
+!NC      stop
+!NC   endif
+
+!NC   ! define x-dimension
+!NC   status = nf90_def_dim(ncid, "x", MXC, xDimID)
+!NC   ! define y dimension
+!NC   status = nf90_def_dim(ncid, "y", MYC, yDimID)
+!NC   ! define x*y
+!NC   status = nf90_def_dim(ncid, "xy", MXC*MYC, xyDimID)
+!NC   ! define sigma dimension
+!NC   status = nf90_def_dim(ncid,"sigma",MSC,sigmaDimID)
+!NC   ! define theta dimension
+!NC   status = nf90_def_dim(ncid,"theta",MDC,thetaDimID)
+
+!NC   if (optg == 5) then
+!NC      write(*,*) 'write_netcdf_restart: unstructered grid not implemented'
+!NC      stop
+!         WRITE (NREF, 105) nverts, 'number of locations'                  40.80
+! 105     FORMAT (I8, T41, A)
+!         DO K = 1, nverts                                                 40.80
+!            WRITE (NREF, FMT=CRFORM) DBLE(xcugrd(K)) + DBLE(XOFFS),       40.80
+!     &                               DBLE(ycugrd(K)) + DBLE(YOFFS)        40.80
+!         ENDDO                                                            40.80
+!         DO K = 1, nverts                                                 40.80
+!            CALL WRSPEC (NREF, AC2(1,1,K))                                40.80
+!         ENDDO                                                            40.80
+!NC   end if
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Define the variables
+!NC   status = nf90_def_var(ncid, "xcgrid", nf90_float, &
+!NC                               (/ xDimID, yDimID /), xcgridID)
+!NC   !write(*,*) 'status sepVarID', status, xcgridID
+!NC   status = nf90_def_var(ncid, "ycgrid", nf90_float, &
+!NC                               (/ xDimID, yDimID /), ycgridID)
+!NC   !write(*,*) 'status sepVarID', status, ycgridID
+
+!NC   status = nf90_def_var(ncid, "rfreq", nf90_float, (/ sigmaDimId /), rfreqID)
+!NC   !write(*,*) 'status rfreqID', status, rfreqID
+
+!NC   status = nf90_def_var(ncid, "cdir", nf90_float, (/ thetaDimId /), cdirID)
+!NC   !write(*,*) 'status cdirID', status, cdirID
+
+!NC   status = nf90_def_var(ncid, "max_spectrum", nf90_float, (/ xydimID /), maxspecID)
+!NC   !write(*,*) 'status maxspecID', status, maxspecID
+
+!NC   status = nf90_def_var(ncid, "spectrum", nf90_int, &
+!NC        (/ thetadimID, sigmaDimID, xydimID /), specID)
+!NC   !write(*,*) 'status aclocID', status, specID
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Put attributes
+!NC   ! Global
+!NC   status = nf90_put_att(ncid, NF90_GLOBAL, "Source", "SWAN")
+!NC   status = nf90_put_att(ncid, NF90_GLOBAL, "Conventions", "CF-1.0")
+!NC   write(msgstr,'(a,a)') "Created at ", CHTIME
+!NC   status = nf90_put_att(ncid, NF90_GLOBAL, "History", msgstr)
+!NC   status = nf90_put_att(ncid, NF90_GLOBAL, "Grid", "lonlat")
+!NC   ! x
+!NC   status = nf90_put_att(ncid, xdimID, "long_name", ovlnam(24))
+!NC   status = nf90_put_att(ncid, xdimID, "unit", ovunit(24))
+!NC   ! y
+!NC   status = nf90_put_att(ncid, ydimID, "long_name", ovlnam(25))
+!NC   status = nf90_put_att(ncid, ydimID, "unit", ovunit(25))
+!NC   ! rfreq
+!NC   status = nf90_put_att(ncid, rfreqID, "long_name", "relative frequencies")
+!NC   status = nf90_put_att(ncid, rfreqID, "units", "Hz")
+!NC   ! cdir
+!NC   status = nf90_put_att(ncid, cdirID, "long_name", "spectal Cartesian directions")
+!NC   status = nf90_put_att(ncid, cdirID, "units", "deg")
+!NC   ! max_spectrum
+!NC   status = nf90_put_att(ncid, maxspecID, "long_name", "maximum energy density")
+!NC   status = nf90_put_att(ncid, maxspecID, "unit", ovunit(21))
+!NC   ! spectrum
+!NC   status = nf90_put_att(ncid, specID, "long_name", ovlnam(21))
+!NC   status = nf90_put_att(ncid, specID, "unit", ovunit(21))
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Declare end of NetCDF headers
+!NC   status = nf90_enddef(ncid)
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Write data
+
+!NC   allocate(mydata(MXC,MYC))
+!NC   ! XCGRID
+!NC   mydata = 0.
+!NC   do ix = 1, MXC
+!NC      do iy = 1, MYC
+!NC         if ( eqreal(xcgrid(ix,iy), excfld(8)) ) then
+!NC            mydata(ix,iy) = DBLE(excfld(8)) + DBLE(xoffs)
+!NC         else
+!NC            mydata(ix,iy) = DBLE(xcgrid(ix,iy)) + DBLE(xoffs)
+!NC         end if
+!NC      end do
+!NC   end do
+
+!NC   status = nf90_put_var(ncid, xcgridId, mydata, start = (/ 1, 1 /), &
+!NC        count = (/ MXC, MYC /))
+!NC   !write(*,*) 'status put xcgrid', status
+
+!NC   ! YCGRID
+!NC   mydata = 0.
+!NC   do ix = 1, MXC
+!NC      do iy = 1, MYC
+!NC         if ( eqreal(ycgrid(ix,iy), excfld(9)) ) then
+!NC            mydata(ix,iy) = DBLE(excfld(9)) + DBLE(yoffs)
+!NC         else
+!NC            mydata(ix,iy) = DBLE(ycgrid(ix,iy)) + DBLE(yoffs)
+!NC         end if
+!NC      end do
+!NC   end do
+!NC   status = nf90_put_var(ncid, ycgridId, mydata, start = (/ 1 ,1 /), &
+!NC       count = (/ MXC, MYC /))
+!NC   deallocate(mydata)
+
+!NC   ! Relative frequencies
+!NC   status = nf90_put_var(ncid, rfreqId, spcsig/PI2, start = (/ 1 /), count = (/ MSC /))
+!NC   !write(*,*) 'status put relative frequencies', status
+
+!NC   ! spectral Cartesian directions
+!NC   status = nf90_put_var(ncid, cdirId, (180.*spcdir(:,1))/PI, start = (/ 1 /), count = (/ MDC /))
+
+!NC   ! action density spectrum (MXC*MYC blocks with dimension (MDC,MSC))
+!NC   allocate(ACmax(MXC*MYC))
+!NC   ACmax = 0.
+!NC   allocate(specdata(MDC,MSC))
+!NC   do ix = 1, MXC
+!NC      do iy = 1, MYC
+!NC         specdata = 0
+!NC         indx = kgrpnt(ix,iy)
+!NC         if (indx.ne.1) then
+!NC            ! determine action density spectrum (cf. routine wrspec)
+!NC            efac = 0.
+!NC            do is = 1, MSC
+!NC               do id = 1, MDC
+!NC                  if (AC2(id,is,indx) >= 0.) then
+!NC                     efac = MAX (efac, AC2(id,is,indx))
+!NC                  else
+!NC                     efac = MAX (efac, 10.*ABS(AC2(id,is,indx)))
+!NC                  end if
+!NC               end do
+!NC            end do
+!NC            ! first determine maximum energy density
+!NC            if (efac <= 1.e-10) then
+!NC               ACmax(indx) = 0.
+!NC            else
+!NC               efac = 1.01 * efac * 10.**(-DEC_SPEC)
+!NC               ! factor PI/180 introduced to account for change from rad to degr
+!NC               ! factor 2*PI to account for transition from rad/s to Hz
+!NC               ACmax(indx) = efac * 2. * PI**2 / 180.
+!NC               do is = 1, MSC
+!NC                  specdata(1:MDC,is) = nint(AC2(1:MDC,is,indx)/efac)
+!NC               end do
+!NC               ! write spectral energy densities
+!NC               status = nf90_put_var(ncid, specID, specdata, &
+!NC                  start = (/ 1,1,indx /), count = (/ MDC, MSC,1 /))
+!NC            end if
+!NC         end if
+!NC      end do
+!NC   end do
+
+!NC   ! write maximum energy density
+!NC   status = nf90_put_var(ncid, maxspecId, ACmax, start = (/ 1 /),&
+!NC      count = (/ MXC*MYC /))
+!NC   !write(*,*) 'status put maximum energy density', status
+
+!NC   deallocate(specdata)
+!NC   deallocate(ACmax)
+
+!NC   !------------------------------------------------------------------------
+!NC   ! Close file
+!NC   status = nf90_close(ncid)
+!NC   if (status /= nf90_noerr) write(*,*) 'problem in write_netcdf_restart'
+
+end subroutine write_netcdf_restart
+
+!------------------------------------------------------------------------
+! Read 2D maps from NetCDF file
+subroutine srdnc ( rdata, mrows, ncols, igrd )
+
+use swcomm1
+use swcomm2
+
+implicit none
+
+! number of rows in the matrix
+integer :: mrows
+! number of columns in the matrix
+integer :: ncols
+! name of input grid
+integer :: igrd
+! data array
+real, dimension(mrows*ncols), intent(out) :: rdata
+
+!------------------------------------------------------------------------
+! Local variables
+!
+! index parameter, loop counters
+integer :: idx, i, j
+! name of variable
+character(13) :: varnam
+! return arguments for variable IDs
+integer :: varID, timevarID
+! number of records found in NetCDF file
+integer :: numxpts, numypts
+! number of time records in NetCDF file
+integer :: nrec
+! help arrays for reading data
+real, dimension(:,:), allocatable :: mydata
+!integer, dimension(:), allocatable :: timelabels
+! flag for use of _FillValue in netcdf file
+integer :: no_fill
+! _FillValue
+real :: filval
+! logical function to compare two real values
+logical :: eqreal
+!------------------------------------------------------------------------
+!NC   ! variable name to read from file
+!NC   select case(igrd)
+!NC   case(5)
+!NC      ! grid(5): wind velocity x-component
+!NC      varnam = 'eastward_wind'
+!NC   case(6)
+!NC      ! grid(6): wind velocity y-component
+!NC      varnam = 'northward_wind'
+!NC   case(7)
+!NC      ! grid(7): water level
+!NC      varnam = 'sep'
+!NC   case default
+!NC      write(*,*) 'srdnc: reading of this variable not yet possible'
+!NC      ! grid(1): depth
+!NC      ! grid(2): current velocity x-component
+!NC      ! grid(3): current velocity y-component
+!NC      ! grid(4): friction coefficient
+!NC      ! grid(8): y-coordinate
+!NC      ! grid(9): x-coordinate
+!NC      ! grid(10): air-sea temperature difference
+!NC      ! grid(11): number of plants per square meter
+!NC      stop
+!NC   end select
+
+!NC   ! Open existing NetCDF file
+!NC   status = nf90_open(filenm, NF90_NOWRITE, ncid)
+
+!NC   ! Get ID of unlimited dimension
+!NC   status = nf90_inquire(ncid, unlimitedDimId = timeDimID)
+
+!NC   ! inquire number of records already present
+!NC   status = nf90_inquire_dimension(ncid, timeDimID, name = msgstr, len = nrec)
+
+!NC   ! inquire ID of variable "time"
+!NC   status = nf90_inq_varid(ncid, "time", timevarID)
+
+!NC   ! TODO LATER
+!NC   ! gebruik UDUNITS om juiste timerecord te vinden
+!NC   ! voor nu (20110823):
+!NC   ! Regien Brouwer heeft een voorbewerkingsactie gedaan waardoor iedere
+!NC   ! wind/wlevel input file exact 1 record bevat.
+
+!NC   ! lees time records
+!NC   ! allocate(timelabels(1:nrec))
+!NC   !status = nf90_get_var(ncid, timevarID, timelabels, start = (/ 1 /), &
+!NC   !      count = (/ nrec /))
+
+!NC   if (nrec > 1) then
+!NC      write(*,*) 'more than 1 time record in input file; reading only last record nrec = ', nrec
+!NC   endif
+
+!NC   ! find ID of current variable
+!NC   status = nf90_inq_varid(ncid, varnam, varID)
+
+!NC   ! check dimensions of variable
+!NC   status = nf90_inq_dimid(ncid, "x", xDimID)
+!NC   status = nf90_inquire_dimension(ncid, xDimID, len = numxpts)
+!NC   if (numxpts /= mrows) &
+!NC      write(*,*) 'incorrect number of x-points in netcdf input file', &
+!NC         numxpts, mrows
+
+!NC   status = nf90_inq_dimid(ncid, "y", yDimID)
+!NC   status = nf90_inquire_dimension(ncid, yDimID, len = numypts)
+!NC   if (numypts /= ncols) &
+!NC      write(*,*) 'incorrect number of y-points in netcdf input file', &
+!NC         numypts, ncols
+
+!NC   status = nf90_get_att(ncid, varID, "_FillValue", filval)
+!NC   if (status /= nf90_noerr) filval = excfld(igrd)
+
+!NC   ! read data
+!NC   !   allocate(mydata(numxpts,numypts))
+!NC   allocate(mydata(numypts,numxpts))
+!NC   status = nf90_get_var(ncid, varID, mydata, start = (/ 1,1,nrec /), &
+!NC         count = (/ numxpts, numypts, 1 /))
+
+!NC   ! return data in one-dimensional array rdata(mrows*ncols)
+!NC   rdata = 0.
+!NC   idx = 1
+
+!NC   do j=1, ncols
+!NC      do i=1,mrows
+!NC         if (eqreal(mydata(i,j),filval)) then
+!NC            rdata(idx) = excfld(igrd)
+!NC         else
+!NC            rdata(idx) = mydata(i,j)
+!NC         endif
+!NC         idx = idx +1
+!NC      end do
+!NC   end do
+
+!NC   deallocate(mydata)
+!NC   !   deallocate(timelabels)
+
+!NC   ! Close file
+!NC   status = nf90_close(ncid)
+!NC   if (status /= nf90_noerr) write(*,*) 'problem in srdnc'
+
+return
+
+end subroutine srdnc
+
+!------------------------------------------------------------------------
+! Write 2D maps to NetCDF file
+subroutine swrnc ( nvar, mrows, ncols, oqi, ivtyp, voqr, voq )
+!
+use swcomm1
+use ocpcomm4
+
+implicit none
+!------------------------------------------------------------------------
+! total number of variables to write information for
+integer :: nvar
+! the number of rows in matrix
+integer :: mrows
+! the number of columns in matrix
+integer :: ncols
+! TODO: comment
+integer :: oqi(3)
+! TODO: comment
+integer :: ivtyp(oqi(3))
+! TODO: comment
+integer :: voqr(*)
+! TODO: comment
+real :: voq(mrows*ncols,*)
+
+!------------------------------------------------------------------------
+! Local variables
+!
+! loop counter
+integer :: i
+! index parameter
+integer :: ivtype
+! return arguments for variable IDs
+integer :: varID, timevarID
+! flag used to write time independent data only once
+integer, dimension(nvar) :: write_data
+! flag for file existence
+logical :: exists
+! time information
+integer, parameter :: strlength = 24
+character(len=strlength) :: timstr
+! data array
+real, dimension(mrows*ncols) :: rdata
+! number of time records in NetCDF file
+integer :: nrec
+! help variables
+integer :: offset, dumval
+
+!------------------------------------------------------------------------
+! Start of source code
+!
+!NC   inquire(file=filenm,exist=exists)
+!NC   if (exists) then
+!NC      ! Open existing NetCDF file
+!NC      status = nf90_open(filenm, NF90_WRITE, ncid)
+!      if (status==0) write(*,*) 'file opened'
+
+! DIT KAN NIET GOED ZIJN! IVTYPE NIET GEINITIALISEERD
+!NC      ! initialise flag for time-dependency of variables
+!NC      if (ivtype < 3 .or. ivtype ==52 ) then
+!NC         write_data(i) = 2
+!NC      else
+!NC         write_data(i) = 3
+!NC      end if
+!NC   else
+!NC      ! Create new file and write header information
+!NC      status = nf90_create(filenm, NF90_WRITE, ncid)
+!      if (status==0) write(*,*) 'file created'
+
+!NC      ! write global attributes
+!NC      call date_and_time(timstr(1:8), timstr(10:20))
+!NC      timstr(9:9) = '_'
+!NC      write (msgstr, '(6A)') 'Data created by SWAN version ', &
+!NC           TRIM(VERTXT),' on ',TRIM(timstr(1:13))
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "history", msgstr)
+!NC      !   status = nf90_put_att(ncid, NF90_GLOBAL, "grid_type", "REGULAR")
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "Conventions", "CF-1.0")
+
+!NC      ! define dimensions
+!NC      status = nf90_def_dim(ncid, "u", ncols, xdimID)
+!NC      status = nf90_def_dim(ncid, "v", mrows, ydimID)
+!NC      status = nf90_def_dim(ncid, "time", nf90_unlimited, timeDimID)
+
+!NC      ! define variable time and write attributes
+!NC      status = nf90_def_var(ncid, "time", nf90_int, &
+!NC           (/ timedimID /), timevarID)
+!NC      status = nf90_put_att(ncid, timevarID, "standard_name", "time")
+!NC      write (msgstr, '(10A)') 'minutes since ', chtime(1:8), &
+!NC         ' ', chtime(10:11),':',chtime(12:13),':',chtime(14:15), ' +00:00'
+!NC      status = nf90_put_att(ncid, timevarID, "units", msgstr)
+
+!NC      ! define variables and write attributes to them
+!NC      do i = 1, nvar
+!NC         ivtype = ivtyp(i)
+!NC         if (ivtype < 3 .or. ivtype ==52 ) then
+!NC            ! time independent data
+!NC            status = nf90_def_var(ncid, ovsnam(ivtype), nf90_float, &
+!NC                 (/ xdimID, ydimID /), varID)
+!NC            write_data(i) = 2
+!NC         else
+!NC            ! time dependent data
+!NC            status = nf90_def_var(ncid, ovsnam(ivtype), nf90_float, &
+!NC                 (/ xdimID, ydimID, timedimID /), varID)
+!NC            write_data(i) = 3
+!NC            status = nf90_put_att(ncid, varID, "coordinates", "Yp Xp")
+!NC         endif
+!NC         status = nf90_put_att(ncid, varID, "long_name", ovlnam(ivtype))
+!NC         status = nf90_put_att(ncid, varID, "units", ovunit(ivtype))
+!NC         status = nf90_put_att(ncid, varID, "_FillValue", ovexcv(ivtype))
+!NC      end do
+
+!NC      ! Declare end of NetCDF headers
+!NC      status = nf90_enddef(ncid)
+
+!NC   endif
+
+!NC   ! Get ID of unlimited dimension
+!NC   status = nf90_inquire(ncid, unlimitedDimId = timeDimID)
+
+!NC   ! inquire number of records already present
+!NC   status = nf90_inquire_dimension(ncid, timeDimID, name = msgstr, len = nrec)
+
+!NC   ! inquire ID of variable "time"
+!NC   status = nf90_inq_varid(ncid, "time", timevarID)
+
+!NC   offset = 1 + nrec
+!NC   dumval = 0 + 60*nrec
+!NC   status = nf90_put_var(ncid, timevarID, dumval, start = (/ offset /))
+
+!NC   do i = 1, nvar
+!NC      ivtype = ivtyp(i)
+
+!NC      ! inquire ID of current data variable
+!NC      status = nf90_inq_varid(ncid, ovsnam(ivtype),varID)
+
+!NC      ! write time independent data
+!NC      if ( write_data(i) == 2 ) then
+!NC         rdata = voq(1:mrows*ncols,voqr(ivtype))
+!NC         status = nf90_put_var(ncid, varID, rdata, start = (/ 1, 1 /), &
+!NC                    count = (/ mrows, ncols /))
+!NC         ! reset flag
+!NC         write_data(i) = 0
+!NC      end if
+
+!NC      !write time dependent data
+!NC      if (write_data(i) == 3) then
+!NC         rdata = voq(1:mrows*ncols,voqr(ivtype))
+!NC         status = nf90_put_var(ncid, varID, rdata, &
+!NC                 start = (/ 1, 1, offset /), count = (/ mrows, ncols /))
+!NC      end if
+!NC   end do
+
+!NC   ! Close file
+!NC   status = nf90_close(ncid)
+!NC   if (status /= nf90_noerr) write(*,*) 'problem in swrnc'
+
+!NC   return
+
+end subroutine swrnc
+
+!------------------------------------------------------------------------
+! Write spectra to NetCDF file
+subroutine swspec_nc ( rtype, nloc, voqr, voq, ac2, &
+             acloc, spcsig, spcdir, dep2, kgrpnt, cross )
+!
+use swcomm1
+use swcomm2
+use swcomm3
+use swcomm4
+use ocpcomm4
+use m_parall, only : parll
+use outp_data
+
+implicit none
+!------------------------------------------------------------------------
+! number of output locations
+integer :: nloc
+! array containing information for output
+integer :: voqr(*)
+integer, dimension(MXC,MYC) :: kgrpnt
+! output variables
+real :: voq(nloc,*)
+real, dimension(MDC,MSC,MCGRD) :: ac2
+real, dimension(MCGRD) :: dep2
+real, dimension(MDC,6) :: spcdir
+real, dimension(MSC) :: spcsig
+!case SPEC: 2-D spectrum at one output location
+!case SPE1: 1-D spectra at output locations
+real, dimension(*) :: acloc
+! type of output request
+! ('SPEC' for 2-D spectral output, 'SPE1' for 1-D freq. spectrum)
+character(len=4) :: rtype
+! logical function to compare two real values
+logical :: eqreal
+! true if obstacle is between output point and computational grid point
+logical, dimension(1:4,1:nloc) :: cross
+
+!------------------------------------------------------------------------
+! Local variables
+!
+! loop counters
+integer :: iloc, ifr, jj, id, is
+! return arguments for dimension ID
+integer :: locdimID, tab2dimID, freqdimID, ndirdimID
+! return arguments for variable IDs
+integer :: locvarID, timevarID, freqvarID, ndirvarID, maxspecID, specID
+integer :: densID, dsprdegrID
+! flag for file existence
+logical :: exists
+! time information
+integer, parameter :: strlength = 24
+character(len=strlength) :: timstr
+! number of time records in NetCDF file
+integer :: nrec
+! help variables
+integer :: offset, otype, ierr, ids, dumval
+! current velocities at output location
+real :: ux, uy
+! help variables
+real :: xc, yc, dep, ofac, efac
+! help variables for writing data
+real, dimension(:,:,:), allocatable :: matdata
+real, dimension(:), allocatable :: vecdata
+integer, dimension(MSC,MDC) :: specdata
+
+!------------------------------------------------------------------------
+! Start of source code
+!
+!NC   if (nstatm .ne. 1) then
+!NC      write(*,*) 'swspec_nc: stationary mode not yet implemented'
+!NC      stop
+!NC   endif
+!NC   if (kspher .eq. 0) then
+!NC      write(*,*) 'swspec_nc: locations in x-y-space not yet implemented'
+!NC      stop
+!NC   endif
+!NC   if ( parll ) then
+!NC      write(*,*) 'swspec_nc: writing not yet implemented for parallel run'
+!NC      stop
+!NC   endif
+!------------------------------------------------------------------------
+!NC   inquire(file=filenm,exist=exists)
+!NC   if (exists) then
+!NC      ! Open existing NetCDF file
+!NC      status = nf90_open(filenm, NF90_WRITE, ncid)
+!NC      !if (status==0) write(*,*) 'file opened', filenm
+
+!NC   else
+!NC      ! Create new file and write header information
+!NC      status = nf90_create(filenm, NF90_WRITE, ncid)
+!NC      if (status==0) write(*,*) 'file created', filenm
+
+!NC      ! write global attributes
+!NC      call date_and_time(timstr(1:8), timstr(10:20))
+!NC      timstr(9:9) = '_'
+!NC      write (msgstr, '(6A)') 'Data created by SWAN version ', &
+!NC           TRIM(VERTXT),' on ',TRIM(timstr(1:13))
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "history", msgstr)
+!NC      !   status = nf90_put_att(ncid, NF90_GLOBAL, "grid_type", "REGULAR")
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "Conventions", "CF-1.0")
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "time_coding_option", itmopt)
+
+!NC      ! define dimensions
+!NC      status = nf90_def_dim(ncid, "time", nf90_unlimited, timeDimID)
+!NC      status = nf90_def_dim(ncid, "nloc", nloc, locdimID)
+!NC      status = nf90_def_dim(ncid, "freq", MSC, freqdimID)
+!NC      status = nf90_def_dim(ncid, "ndir", MDC, ndirdimID)
+!NC      status = nf90_def_dim(ncid, "tab2", 2, tab2dimID)
+
+!NC      ! define variable time and write attributes
+!NC      status = nf90_def_var(ncid, "time", nf90_int, (/ timedimID /), timevarID)
+!NC      write(*,*) 'status def_var("time")', status
+!NC      status = nf90_put_att(ncid, timevarID, "standard_name", "time")
+!NC      write (msgstr, '(10A)') 'minutes since ', chtime(1:8), &
+!NC         ' ', chtime(10:11),':',chtime(12:13),':',chtime(14:15), ' +00:00'
+!NC      status = nf90_put_att(ncid, timevarID, "units", msgstr)
+
+!NC      ! define variable points and write attributes
+!NC      status = nf90_def_var(ncid, "points", nf90_float, &
+!NC                 (/ tab2dimID, locdimID /), locvarID)
+
+!NC      status = nf90_put_att(ncid, locvarID, "standard_name", "locations in &
+!NC             spherical coordinates")
+
+!NC      ! define variable frequency and write attributes
+!NC      if (rtype(3:3) .eq. 'R') then
+!NC         status = nf90_def_var(ncid, "RFREQ", nf90_float, &
+!NC                 (/ freqdimID /), freqvarID)
+!NC         status = nf90_put_att(ncid, freqvarID, "standard_name", &
+!NC            "relative frequencies")
+!NC      else
+!NC         status = nf90_def_var(ncid, "AFREQ", nf90_float, &
+!NC                (/ freqdimID /), freqvarID)
+!NC         status = nf90_put_att(ncid, freqvarID, "standard_name", &
+!NC            "absolute frequencies")
+!NC      endif
+!NC      status = nf90_put_att(ncid, freqvarID, "units", "Hz")
+
+!------------------------------------------------------------------------
+! define variables for 1D or 2D spectra
+
+!NC      ! full 2-D spectrum
+!NC      if (rtype(4:4) .eq. 'C') then
+!NC         if (bnaut) then
+!NC            status = nf90_def_var(ncid, "NDIR", nf90_float, &
+!NC                (/ ndirdimID /), ndirvarID)
+!NC            status = nf90_put_att(ncid, ndirvarID, "standard_name", &
+!NC               "spectral nautical directions")
+!NC         else
+!NC            status = nf90_def_var(ncid, "CDIR", nf90_float, &
+!NC                (/ ndirdimID /), ndirvarID)
+!NC            status = nf90_put_att(ncid, ndirvarID, "standard_name", &
+!NC               "spectral Cartesian directions")
+!NC         endif
+!NC         status = nf90_put_att(ncid, ndirvarID, "units", "degr")
+
+!NC         ! FACTOR per location, time-dependent
+!NC         status = nf90_def_var(ncid, "max_spectrum", nf90_float, &
+!NC            (/ locdimID, timedimID /), maxspecID)
+
+!NC         ! 2D spectrum per location, time-dependent
+!NC         status = nf90_def_var(ncid, "spectrum", nf90_int, &
+!NC            (/ freqdimID, ndirdimID, locdimId, timedimID /), specID)
+!NC         if (inrhog.eq.1) then
+!NC            status = nf90_put_att(ncid, specID, "standard_name", &
+!NC               "EnDens, energy densities")
+!NC            status = nf90_put_att(ncid, specID, "units", "J/m2/Hz/degr")
+!NC         else
+!NC            status = nf90_put_att(ncid, specID, "standard_name", &
+!NC               "VaDens, variance densities")
+!NC            status = nf90_put_att(ncid, specID, "units", "m2/Hz/degr")
+!NC         endif
+! TODO: ovexcv(22) is real, geeft problemen bij gebruik icm nf90_int
+! wat is een goede exception value?
+!         status = nf90_put_att(ncid, specID, "_FillValue", ovexcv(22))
+
+!------------------------------------------------------------------------
+!NC      else
+!NC      ! 1-D spectrum
+!NC         if (inrhog ==1) then
+!NC            status = nf90_def_var(ncid, "density", nf90_float, &
+!NC                 (/ freqdimID, locdimID, timedimID /), densID)
+!NC            status = nf90_put_att(ncid, densID, "standard_name", &
+!NC               "EnDens, energy densities")
+!NC            status = nf90_put_att(ncid, densID, "units", "J/m2/Hz")
+!NC            status = nf90_put_att(ncid, densID, "_FillValue", ovexcv(22))
+!NC         else
+!NC            status = nf90_def_var(ncid, "density", nf90_float, &
+!NC                 (/ freqdimID, locdimID, timedimID /), densID)
+!NC            status = nf90_put_att(ncid, densID, "standard_name", &
+!NC               "VaDens, variance densities")
+!NC            status = nf90_put_att(ncid, densID, "units", "m2/Hz")
+!NC            status = nf90_put_att(ncid, densID, "_FillValue", ovexcv(22))
+!NC         end if
+
+!NC         if (bnaut) then
+!NC            status = nf90_def_var(ncid, "NDIR", nf90_float, &
+!NC                 (/ freqdimID, locdimID, timedimID /), ndirvarID)
+!NC            status = nf90_put_att(ncid, ndirvarID, "standard_name", &
+!NC               "average nautical direction")
+!NC         else
+!NC            status = nf90_def_var(ncid, "CDIR", nf90_float, &
+!NC                (/ freqdimID, locdimId, timedimID /), ndirvarID)
+!NC            status = nf90_put_att(ncid, ndirvarID, "standard_name", &
+!NC               "average Cartesian direction")
+!NC         end if
+!NC         status = nf90_put_att(ncid, ndirvarID, "units", ovunit(13))
+!NC         status = nf90_put_att(ncid, ndirvarID, "_FillValue", ovexcv(13))
+
+!NC         status = nf90_def_var(ncid, "dsprdegr", nf90_float, &
+!NC              (/ freqdimID, locdimID, timedimID /), dsprdegrID)
+!NC         status = nf90_put_att(ncid, dsprdegrID, "units", ovunit(16))
+!NC         status = nf90_put_att(ncid, dsprdegrID, "_FillValue", ovexcv(16))
+!NC      endif
+!------------------------------------------------------------------------
+!NC      ! Declare end of NetCDF headers
+!NC      status = nf90_enddef(ncid)
+
+!------------------------------------------------------------------------
+!NC      ! write time independent information
+
+!NC      ! locations
+!NC      allocate(matdata(nloc,2,1))
+!NC      do iloc = 1, nloc
+!NC         matdata(iloc,1,1) = DBLE(voq(iloc,voqr(1)))
+!NC         matdata(iloc,2,1) = DBLE(voq(iloc,voqr(2)))
+!NC      end do
+!NC      status = nf90_put_var(ncid, locvarID, matdata, start = (/ 1 /), &
+!NC                     count = (/ 2, nloc /))
+!NC      deallocate(matdata)
+
+!NC      ! frequencies
+!NC      status = nf90_put_var(ncid, freqvarID, SPCSIG/PI2, start = (/ 1 /), &
+!NC                     count = (/ MSC /))
+
+!NC      if (rtype(4:4) .eq. 'C') then
+!NC         allocate(vecdata(MDC))
+!NC         if (bnaut) then
+!NC            vecdata = 180. + dnorth - spcdir(:,1)*180./PI
+!NC         else
+!NC            vecdata = SPCDIR(:,1)*180./PI
+!NC         endif
+!NC         status = nf90_put_var(ncid, ndirvarID, vecdata, start = (/ 1 /), &
+!NC              count = (/ MDC /))
+!NC         deallocate(vecdata)
+!NC      endif
+!NC   endif
+
+!------------------------------------------------------------------------
+!  write time dependent data
+
+!NC   ! Get ID of unlimited dimension
+!NC   status = nf90_inquire(ncid, unlimitedDimId = timeDimID)
+
+!NC   ! inquire number of records already present
+!NC   status = nf90_inquire_dimension(ncid, timeDimID, name = msgstr, len = nrec)
+
+!NC   ! inquire ID of variable "time"
+!NC   status = nf90_inq_varid(ncid, "time", timevarID)
+
+!NC   offset = 1 + nrec
+!NC   dumval = 0 + 60*nrec
+!NC   status = nf90_put_var(ncid, timevarID, dumval, start = (/ offset /))
+
+!NC   if (rtype(4:4) .eq. 'C') then
+!NC      ! full 2-D spectrum
+
+!NC      ! inquire ID for FACTOR per location
+!NC      status = nf90_inq_varid(ncid, "max_spectrum",maxspecID)
+
+!NC      ! inquire ID for 2D spectrum per location
+!NC      status = nf90_inq_varid(ncid, "spectrum",specID)
+
+!NC      if (rtype.eq.'SPEC') THEN
+!NC         otype = -2
+!NC      else
+!NC         otype = 2
+!NC      endif
+!NC      specdata = 0
+!NC   else
+!NC      ! inquire ID for 1-D spectrum
+!NC      status = nf90_inq_varid(ncid, "density",densID)
+!NC      status = nf90_inq_varid(ncid, "dsprdegr",dsprdegrID)
+!NC      if (bnaut) then
+!NC         status = nf90_inq_varid(ncid, "NDIR",ndirvarID)
+!NC      else
+!NC         status = nf90_inq_varid(ncid, "CDIR",ndirvarID)
+!NC      endif
+!NC      if (rtype.eq.'SPE1') then
+!NC         otype = -1
+!NC      else
+!NC         otype = 1
+!NC      endif
+!NC      ! allocate buffering array
+!NC      allocate(matdata(3, MSC, nloc ) )
+!NC      matdata = 0.
+!NC   endif
+
+!NC   ! for all locations
+!NC   do iloc = 1, nloc
+!NC      if (optg .ne. 5) then
+!NC         xc = voq(iloc,voqr(24))
+!NC         yc = voq(iloc,voqr(25))
+!NC      else
+!NC         if (.NOT.eqreal(voq(iloc,1),ovexcv(1))) xc = voq(iloc,1) - xoffs
+!NC         if (.NOT.eqreal(voq(iloc,2),ovexcv(2))) yc = voq(iloc,2) - yoffs
+!NC      endif
+!NC      dep = voq(iloc,voqr(4))
+!NC      if (dep < 0 .or.  eqreal(dep,ovexcv(4))) then
+!NC         !   write(*,*) 'nodata'
+!NC      else
+!NC         if (icur > 0) then
+!NC            ux = voq(iloc,voqr(5))
+!NC            uy = voq(iloc,voqr(5)+1)
+!NC         else
+!NC            ux = 0.
+!NC            uy = 0.
+!NC         endif
+
+!NC         if (inrhog == 1) THEN
+!NC            ofac = rho * grav
+!NC         else
+!NC            ofac = 1.
+!NC         endif
+
+!NC         call swcmsp (otype       ,xc         ,yc          , &
+!NC                      ac2         ,acloc      ,spcsig      , &
+!NC                      dep         ,dep2       ,ux          , &
+!NC                      uy          ,spcdir(1,2),spcdir(1,3) , &
+!NC                      ofac        ,kgrpnt     ,cross(1,iloc) , ierr )
+
+!NC         if (ierr == 0) then
+
+!NC            if ( abs(otype).eq.2) then
+!NC            ! write 2d spectrum
+!NC               efac = 0.
+!NC               do is = 1, MSC
+!NC                  do id = 1, MDC
+!NC                     ids = id + (is-1)*MDC
+!NC                     if (acloc(ids) >= 0.) then
+!NC                        efac = MAX (efac, acloc(ids))
+!NC                     else
+!NC                        efac = MAX (efac, 10.*ABS(acloc(is)))
+!NC                     end if
+!NC                  end do
+!NC               end do
+!NC               ! first determine maximum energy density
+!NC               if (efac <= 1.e-10) then
+!NC                  efac = 0.
+!NC               else
+!NC                  efac = 1.01 * efac * 10.**(-DEC_SPEC)
+!NC                  ! factor PI/180 introduced to account for change from rad to degr
+!NC                  ! factor 2*PI to account for transition from rad/s to Hz
+!NC                  do is = 1, MSC
+!NC                     do id = 1, MDC
+!NC                        ids = id + (is-1)*MDC
+!NC                        specdata(is,id) = nint(acloc(ids)/efac)
+!NC                     end do
+!NC                  end do
+!NC               end if
+!NC               ! write FACTOR
+!NC               efac = efac * 2. * PI**2 / 180.
+!NC               offset = 1 + nrec
+!NC               status = nf90_put_var(ncid, maxspecID, efac, start = (/ iloc, offset /))
+!NC               !write(*,*) 'status efac', status, efac
+
+!NC               ! write spectral energy densities for location iloc
+!NC               status = nf90_put_var(ncid, specID, specdata, &
+!NC                    start = (/ 1, 1, iloc, offset /), count = (/ MSC, MDC /))
+!NC            else
+!NC               do ifr = 1, MSC
+!NC                  ! write frequency spectra
+!NC                  matdata(1, ifr, iloc ) = ACLOC(ifr)
+!NC                  matdata(2, ifr, iloc ) = ACLOC(  MSC+ifr)
+!NC                  matdata(3, ifr, iloc ) = ACLOC(2*MSC+ifr)
+!NC               enddo
+!NC           endif
+!NC         endif
+!NC      endif
+!NC   enddo
+
+!NC   if ( abs(otype).eq.1) then
+!NC      status = nf90_put_var(ncid, densID, matdata(1,:,:), &
+!NC           start = (/ 1, 1, offset /), count = (/ MSC, nloc /))
+!NC      status = nf90_put_var(ncid, ndirvarID, matdata(2, :,:), &
+!NC           start = (/ 1, 1, offset /), count = (/ MSC, nloc /))
+!NC      status = nf90_put_var(ncid, dsprdegrID, matdata(3,:,:), &
+!NC           start = (/ 1, 1, offset /), count = (/ MSC, nloc /))
+!NC      deallocate(matdata)
+!NC   endif
+
+!------------------------------------------------------------------------
+!NC   ! Close file
+!NC   status = nf90_close(ncid)
+!NC   if (status /= nf90_noerr) write(*,*) 'problem in swspec_nc'
+
+!NC   return
+
+end subroutine swspec_nc
+
+!------------------------------------------------------------------------
+! Write POINTS to NetCDF file
+subroutine sncpnt (nvar, mip, psname, oqi, ivtyp, voqr, voq)
+!
+use swcomm1
+
+implicit none
+!------------------------------------------------------------------------
+! total number of variables to write information for
+integer :: nvar
+! total number of locations
+integer :: mip
+! array containing information for output
+integer :: voqr(*)
+! output variables
+real :: voq(mip,*)
+! name of output frame
+character*8 :: psname
+! array containing output request data
+integer :: oqi(4)
+! type of variable output
+integer :: ivtyp(oqi(3))
+!
+!------------------------------------------------------------------------
+! Local variables
+!
+! flag for file existence
+logical :: exists
+! return arguments for dimension ID
+integer :: locdimID, varID, timevarID, strdimID, varlocID
+! loop counter
+integer :: jvar, istr, ip
+! number of time records in NetCDF file
+integer :: nrec
+! index parameter
+integer :: ivtype
+! Dummy arrays to store data (reals)
+real :: dumarr1(mip), dumarr2(mip)
+! help variables
+integer :: offset, dumval, lstr
+! time information
+integer, parameter :: strlength = 27
+character(len=strlength) :: timstr
+! Dummy arrays to store location names
+character(len=strlength) :: locarr(mip)
+! string containing name and unit of specific variable
+character(len=strlength) :: name, unit
+! string used to get locationnames
+CHARACTER(len=256) :: string
+! length of 'string'
+integer :: length
+! position of 1st and 2nd appearence of " in input file
+integer :: pos1, pos2
+!------------------------------------------------------------------------
+! Start of source code
+!
+!NC   inquire(file=filenm,exist=exists)
+!NC   if (exists) then
+!NC      ! Open existing NetCDF file
+!NC      status = nf90_open(filenm, NF90_WRITE, ncid)
+!NC   else
+!NC      ! Create new file
+!NC      print*, 'SRDNC: creating (4): ', filenm
+!NC      status = nf90_create(filenm, NF90_WRITE, ncid)
+
+!NC      ! Write header information:
+!NC      !  - Dimensions
+!NC      status = nf90_def_dim(ncid, "time", nf90_unlimited, timeDimID)
+!NC      status = nf90_def_dim(ncid, "nloc", mip, locdimID)
+!NC      status = nf90_def_dim(ncid, "strleng", strlength, strdimID)
+
+!NC      !  - Global attributes
+!NC      !      * History
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "history", "dit is een test")
+!NC      call date_and_time(timstr(1:8), timstr(10:20))
+!NC      timstr(9:9) = '_'
+!NC      write (msgstr, '(6A)') 'Data created by SWAN version ', &
+!NC           TRIM(VERTXT),' on ',TRIM(timstr(1:13))
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "history", msgstr)
+
+!NC      !      * Run, table and SWAN version
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "Run", projnr)
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "Table", psname)
+!NC      status = nf90_put_att(ncid, NF90_GLOBAL, "Swan version", trim(vertxt))
+
+!NC      !  - Variables
+!NC      !      *Names of locations
+!NC      status = nf90_def_var(ncid, 'station_id', nf90_char,&
+!NC                           (/ strdimID, locdimID /), varlocID)
+!NC      status = nf90_put_att(ncid, varlocID, "long_name", "Locations names")
+
+!NC      !      *Swan variables
+!NC      do jvar = 1,nvar
+!NC         ! get names and corresponding units of current variable
+!NC         ivtype = ivtyp(jvar)
+!NC         lstr = 1
+!NC         do istr = len(ovunit(ivtype)), 1, -1
+!NC            if (ovunit(ivtype)(istr:istr) .ne. ' ') then
+!NC               lstr = istr
+!NC               goto 51
+!NC            endif
+!NC         enddo
+51       unit = trim(ovunit(ivtype)(1:lstr))
+!NC         name = trim(ovsnam(ivtype))
+
+!NC         ! Create an variable inside the NetCDF for each one we find
+!NC         if (ovsvty(ivtype).le.2) then
+!NC            if (trim(name)=="Time") then
+!NC               ! Time: define variable 'time' and write attributes
+!NC               write (msgstr, '(10A)') 'minutes since ', chtime(1:8), &
+!NC                                       ' ', chtime(10:11),':',chtime(12:13), &
+!NC                                       ':',chtime(14:15), ' +00:00'
+!NC               status = nf90_def_var(ncid, "time", nf90_int,&
+!NC                                    (/ timeDimID /), timevarID)
+!NC               status = nf90_put_att(ncid, timevarID, "standard_name", "time")
+!NC               status = nf90_put_att(ncid, timevarID, "units", msgstr)
+!NC            else
+!NC               ! define the next variables and add its units:
+!NC               !    Xp, Yp, Depth, Hsig, Hswell, Tm_10, Dir, Dspr, TPsmoo, Watlev
+!NC               status = nf90_def_var(ncid, name, nf90_float, &
+!NC                                    (/ locdimID,timeDimID /), varID)
+!NC               status = nf90_put_att(ncid, varID, "units", unit)
+!NC               status = nf90_put_att(ncid, varID, "_FillValue", ovexcv(ivtype))
+!NC            endif
+!NC         else
+!NC            ! X-Windv: define the variable and add its unit
+!NC            status = nf90_def_var(ncid, 'x-'//name, nf90_float, &
+!NC                                 (/ locdimID, timeDimID /), varID)
+!NC            status = nf90_put_att(ncid, varID, "units", unit)
+!NC            status = nf90_put_att(ncid, varID, "_FillValue", ovexcv(ivtype))
+
+!NC            ! Y-Windv: define the variable and add its unit
+!NC            status = nf90_def_var(ncid, 'y-'//name, nf90_float, &
+!NC                                 (/ locdimID, timeDimID /), varID)
+!NC            status = nf90_put_att(ncid, varID, "units", unit)
+!NC            status = nf90_put_att(ncid, varID, "_FillValue", ovexcv(ivtype))
+!NC         endif
+!NC      enddo
+
+!NC      ! Declare end of NetCDF headers
+!NC      status = nf90_enddef(ncid)
+
+!NC      ! Find location_ids of the current run
+!NC      open(UNIT=1, FILE=statnames, STATUS="OLD")
+!NC      do ip = 1, mip
+!NC         read(1,'(4a)') string
+!NC         string = trim(string)
+!NC         length = len_trim(string)
+!NC         pos1 = scan(string(1:length), '"')
+!NC         pos2 = scan(string(pos1+1:length), '"')
+!NC         name = string(pos1+1:pos1+pos2-1)
+!NC         locarr(ip) = trim(name)
+!NC      enddo
+!NC      close(1)
+
+!NC      ! Put the names of the locations on the NetCDF-file
+!NC      status = nf90_put_var(ncid, varlocID, locarr, &
+!NC                            start = (/ 1, 1   /), &
+!NC                            count = (/ strlength, mip /))
+!NC      if (status /= nf90_noerr) write(*,*) 'problem in writing station_id'
+
+!NC   endif
+!NC   !
+!NC   ! Header is complete now, start writing data
+!NC   !
+
+!NC   ! Get ID of unlimited dimension
+!NC   status = nf90_inquire(ncid, unlimitedDimId = timeDimID)
+
+!NC   ! inquire number of records already present
+!NC   status = nf90_inquire_dimension(ncid, timeDimID, name = msgstr, len = nrec)
+
+!NC   ! inquire ID of variable "time"
+!NC   status = nf90_inq_varid(ncid, "time", timevarID)
+
+!NC   ! Find values (per variable) and write it to the NetCDF-file
+!NC   do jvar = 1, nvar
+!NC      ivtype = ivtyp(jvar)
+!NC      name = trim(ovsnam(ivtype))
+
+!NC      if (ivtype.eq.40) then
+!NC         ! We found variable 'Time': write time to NETCDF
+!NC         offset = 1 + nrec
+!NC         dumval = 0 + 60*nrec
+!NC         status = nf90_put_var(ncid, timevarID, dumval, start = (/ offset /))
+!NC      else
+!NC         ! We found another variable
+!NC         ! Make a dummyarray with all values for each location
+!NC         do ip = 1, mip
+!NC            if (name=="Windv") then
+!NC               ! store values for x-windv and y-windv
+!NC               dumarr1(ip) = voq(ip,voqr(ivtype))
+!NC               dumarr2(ip) = voq(ip,voqr(ivtype)+1)
+!NC            else
+!NC               ! store values for: Xp, Yp, Depth, Hsig, Hswell, Tm_10, Dir, Dspr, TPsmoo, Watlev
+!NC               dumarr1(ip) = voq(ip,voqr(ivtype))
+!NC            endif
+!NC         enddo
+
+!NC         ! write dumarr1 (and if needed dumarr2) to NETCDF
+!NC         if (trim(name)=="Windv") then
+!NC            status = nf90_inq_varid(ncid, 'x-'//name,varID)
+!NC            status = nf90_put_var(ncid, varID, dumarr1, &
+!NC                 start = (/ 1, offset /), count = (/ mip /))
+
+!NC            status = nf90_inq_varid(ncid, 'y-'//name,varID)
+!NC            status = nf90_put_var(ncid, varID, dumarr2, &
+!NC                 start = (/ 1, offset /), count = (/ mip /))
+!NC         else
+!NC            status = nf90_inq_varid(ncid, name,varID)
+!NC            status = nf90_put_var(ncid, varID, dumarr1, &
+!NC                 start = (/ 1, offset /), count = (/ mip /))
+!NC         endif
+
+!NC      endif
+!NC   enddo
+
+!NC   ! Close file
+!NC   status = nf90_close(ncid)
+!NC   if (status /= nf90_noerr) write(*,*) 'problem in swspec_nc'
+
+!NC   return
+
+end subroutine sncpnt
+
+!------------------------------------------------------------------------
+end module m_netcdfio

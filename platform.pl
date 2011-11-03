@@ -150,6 +150,14 @@ elsif ($os =~ /HP-UX/i) {
 }
 elsif ($os =~ /Linux/i) {
   system 'sh ./getcmpl';
+  # find out if NETCDF is available
+  my ($swch, $flag_netcdf, $lib_netcdf, $inc_netcdf);
+  if ($ENV{'NETCDF_ROOT'} =~ m/^\/\w+/) {
+     $flag_netcdf = "-lnetcdff";
+     $lib_netcdf = "-L$ENV{'NETCDF_ROOT'}/lib";
+     $inc_netcdf ="-I$ENV{'NETCDF_ROOT'}/include";
+     $swch = '-netcdf';
+  }
   if ( -f "ifort" )
   {
     system 'rm ifort';
@@ -173,17 +181,20 @@ elsif ($os =~ /Linux/i) {
     print OUTFILE "FLAGS_SER =\n";
     print OUTFILE "FLAGS_OMP = -openmp\n";
     print OUTFILE "FLAGS_MPI =\n";
+    print OUTFILE "FLAGS_NETCDF = $flag_netcdf\n";
     print OUTFILE "INCS_SER =\n";
+    print OUTFILE "INCS_NETCDF =$inc_netcdf\n";
     print OUTFILE "INCS_OMP =\n";
     print OUTFILE "INCS_MPI =\n";
     print OUTFILE "LIBS_SER =\n";
+    print OUTFILE "LIBS_NETCDF =$lib_netcdf\n";
     print OUTFILE "LIBS_OMP =\n";
     print OUTFILE "LIBS_MPI =\n";
     print OUTFILE "OUT = -o \n";
     print OUTFILE "EXTO = o\n";
     print OUTFILE "MAKE = make\n";
     print OUTFILE "RM = rm -f\n";
-    print OUTFILE "swch = -unix -impi -cdate12\n";
+    print OUTFILE "swch = -unix -impi -cdate12 $swch \n";
   }
   elsif ( -f "ifc" )
   {

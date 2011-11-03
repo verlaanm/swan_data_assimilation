@@ -28,6 +28,7 @@ swmod1.$(EXTO) \
 swmod2.$(EXTO) \
 m_constants.$(EXTO) \
 m_fileio.$(EXTO) \
+m_netcdfio.$(EXTO) \
 serv_xnl4v5.$(EXTO) \
 mod_xnl4v5.$(EXTO) \
 SwanGriddata.$(EXTO) \
@@ -111,16 +112,16 @@ install:
 
 ser:
 	@perl switch.pl $(swch) *.ftn *.ftn90
-	$(MAKE) FOR=$(F90_SER) FFLAGS="$(FLAGS_OPT) $(FLAGS_MSC) $(FLAGS_SER)" \
-	        FFLAGS90="$(FLAGS_OPT) $(FLAGS90_MSC) $(FLAGS_SER)" \
-                INCS="$(INCS_SER)" LIBS="$(LIBS_SER)" $(SWAN_EXE)
+	$(MAKE) FOR=$(F90_SER) FFLAGS="$(FLAGS_OPT) $(FLAGS_NETCDF) $(FLAGS_MSC) $(FLAGS_SER)" \
+	        FFLAGS90="$(FLAGS_OPT) $(FLAGS90_MSC) $(FLAGS_SER) $(FLAGS_NETCDF)" \
+                INCS="$(INCS_SER) $(INCS_NETCDF)" LIBS="$(LIBS_SER) $(LIBS_NETCDF)" $(SWAN_EXE)
 	$(MAKE) hcat
 
 omp:
 	@perl switch.pl $(swch) *.ftn *.ftn90
-	$(MAKE) FOR=$(F90_OMP) FFLAGS="$(FLAGS_OPT) $(FLAGS_MSC) $(FLAGS_OMP)" \
+	$(MAKE) FOR=$(F90_OMP) FFLAGS="$(FLAGS_OPT) $(FLAGS_MSC) $(FLAGS_OMP) $(FLAGS_NETCDF)" \
 	        FFLAGS90="$(FLAGS_OPT) $(FLAGS90_MSC) $(FLAGS_OMP)" \
-                INCS="$(INCS_OMP)" LIBS="$(LIBS_OMP)" $(SWAN_EXE)
+                INCS="$(INCS_OMP) $(INCS_NETCDF)" LIBS="$(LIBS_OMP) $(LIBS_NETCDF)" $(SWAN_EXE)
 	$(MAKE) hcat
 
 mpi:
@@ -178,3 +179,6 @@ cleandoc:
 	$(MAKE) -f Makefile.latex TARGET=swanimp cleandoc
 	$(MAKE) -f Makefile.latex TARGET=swanpgr cleandoc
 	$(MAKE) -f Makefile.latex TARGET=latexfordummies cleandoc
+
+ncclean:
+	$(RM) m_netcdfio.o m_netcdfio.mod

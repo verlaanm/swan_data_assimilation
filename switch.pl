@@ -12,6 +12,7 @@ $cvi = "FALSE";
 $cd10 = 'FALSE';
 $cd12 = 'FALSE';
 $cd14 = 'FALSE';
+$netcdf = 'FALSE';
 while ( $ARGV[0]=~/-.*/ )
    {
    if ($ARGV[0]=~/-esmf/) {$esmf="TRUE";shift;}
@@ -27,6 +28,7 @@ while ( $ARGV[0]=~/-.*/ )
    if ($ARGV[0]=~/-cdate10/) {$cd10="TRUE";shift;}
    if ($ARGV[0]=~/-cdate12/) {$cd12="TRUE";shift;}
    if ($ARGV[0]=~/-cdate14/) {$cd14="TRUE";shift;}
+   if ($ARGV[0]=~/-netcdf/) {$netcdf="TRUE";shift;}
    }
 
 # --- make a list of all files
@@ -75,6 +77,7 @@ foreach $file (@files)
       if ($cd10=~/TRUE/) {$newline=~s/^!CDAT10//;}
       if ($cd12=~/TRUE/) {$newline=~s/^!CDAT12//;}
       if ($cd14=~/TRUE/) {$newline=~s/^!CDAT14//;}
+      if ($netcdf=~/TRUE/) {$newline=~s/^!NC//;}
       print OUTFILE $newline;
     }
     close file;

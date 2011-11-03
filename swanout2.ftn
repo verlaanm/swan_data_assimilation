@@ -22,6 +22,7 @@
       USE OCPCOMM4                                                        40.41
       USE SWCOMM1                                                         40.41
       USE OUTP_DATA                                                       40.13
+!NC      use m_netcdfio
 !
 !
 !
@@ -77,7 +78,8 @@
 !     40.31, Dec. 03: removing POOL construction
 !     40.41, Jun. 04: some improvements with respect to MATLAB
 !     40.41, Oct. 04: common blocks replaced by modules, include files removed
-!
+!     40.XX, Jul. 11: extension to write block output to NETCDF files
+
 !  2. PURPOSE
 !
 !       Preparing output in the form of a block that is printed by
@@ -142,6 +144,7 @@
       INTEGER IF, IL                                                      40.41 40.30
       INTEGER, SAVE :: IREC(MAX_OUTP_REQ)=0                               40.51 40.41
       LOGICAL, SAVE :: MATLAB=.FALSE.                                     40.41 40.30
+      LOGICAL, SAVE :: NETCDF=.FALSE.                                     40.41 40.30
       CHARACTER (LEN=20) :: CTIM                                          40.41
       CHARACTER (LEN=30) :: NAMVAR                                        40.41
 
@@ -165,6 +168,17 @@
       FILENM = OUTP_FILES(OQI(2))                                         40.31 40.13
       MATLAB = INDEX( FILENM, '.MAT' ).NE.0 .OR.                          40.41 40.30
      &         INDEX (FILENM, '.mat' ).NE.0                               40.41 40.30
+      NETCDF = INDEX( FILENM, '.NC' ).NE.0 .OR.
+     &         INDEX (FILENM, '.nc' ).NE.0
+!
+!NC      IF (NETCDF) THEN
+!NC         NVAR = OQI(3)
+!NC         CALL SWRNC(NVAR, MYK, MXK, OQI, IVTYP, VOQR, VOQ)
+!NC!        netcdf write is done for all variables at once,
+!NC!        -> exit routine immediately afterwards
+!NC         RETURN
+!NC      END IF
+!
       IF (NREF.EQ.0) THEN
         IOSTAT = -1                                                       20.75
         CALL FOR (NREF, FILENM, 'UF', IOSTAT)
@@ -670,6 +684,7 @@
       USE OUTP_DATA                                                       40.13
       USE TIMECOMM                                                        40.41
       USE M_PARALL                                                        40.51
+!NC      use m_netcdfio
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -831,9 +846,9 @@
 !           For all output quantities do
 !               Get value for array VOQ
 !               If output quantity is TIME
-!               Then make Format='(A18)'
-!                    write time into output line
-!                    make lfield = 18
+!                    Then make Format='(A18)'
+!                         write time into output line
+!                         make lfield = 18
 !               Else if Rtype = 'TABD'
 !                    Then Format = '(E12.4)'
 !                         make lfield = 12
@@ -856,10 +871,25 @@
       CHARACTER (LEN=8)      :: CRFORM = '(2F14.4)'                       40.03
 
       INTEGER, SAVE :: IENT=0                                             40.13
+!NC
+!NC      LOGICAL, SAVE :: NETCDF=.FALSE.
+!NC
       IF (LTRACE) CALL STRACE(IENT,'SWTABP')
 !
       NREF = OQI(1)                                                       40.31 30.00
       NVAR = OQI(3)                                                       40.31 30.00
+
+!NC      FILENM = OUTP_FILES(OQI(2))
+!NC      NETCDF = INDEX( FILENM, '.NC' ).NE.0 .OR.
+!NC     &         INDEX (FILENM, '.nc' ).NE.0
+!NC
+!NC      IF (NETCDF) THEN
+!NC         NVAR = OQI(3)
+!NC         CALL SNCPNT(NVAR, MIP, PSNAME, OQI, IVTYP, VOQR, VOQ)
+!NC!        netcdf write is done for all variables at once,
+!NC!        -> exit routine immediately afterwards
+!NC         RETURN
+!NC      END IF
 !
 !     Header information is printed once for each data file and for
 !     each entry in this routine when the table is written to the PRINT file
@@ -1184,6 +1214,7 @@
       USE SWCOMM4                                                         40.41
       USE OUTP_DATA                                                       40.13
       USE M_PARALL                                                        40.31
+!NC      use m_netcdfio
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -1326,6 +1357,15 @@
       INTEGER, SAVE :: IENT=0                                             40.13
       IF (LTRACE) CALL STRACE(IENT,'SWSPEC')
 !
+!NC      FILENM = OUTP_FILES(OQI(2))
+!NC      IF (INDEX( FILENM, '.nc') .NE. 0 .OR.
+!NC     &       INDEX( FILENM, '.NC') .NE. 0) THEN
+!NC!        write spectra to NetCDF file and return
+!NC         call swspec_nc(RTYPE, MIP, VOQR, VOQ, AC2, ACLOC,
+!NC     &                  SPCSIG, SPCDIR, DEP2, KGRPNT, CROSS )
+!NC         RETURN
+!NC      END IF
+
       NREF = OQI(1)                                                       40.31 30.00
       IF (INRHOG.EQ.1) THEN
         OFAC = RHO * GRAV                                                 30.20
