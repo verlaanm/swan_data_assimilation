@@ -43,7 +43,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -447,7 +447,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -754,7 +754,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -949,7 +949,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -978,7 +978,6 @@
 !     40.67: Nico Booij
 !     41.03: Andre van der Westhuysen
 !     41.06: Gerbrant van Vledder
-!     41.09: Andre van der Westhuysen
 !
 !  1. Updates
 !
@@ -992,7 +991,6 @@
 !     40.67, Jun. 07: more accurate computation of dissipation terms
 !     41.03, Feb. 09: extension to alternative surf breaking formula's
 !     41.06, Mar. 09: extension to frequency dependent surf breaking
-!     41.09, Oct. 09: extension to biphase breaker model (variable n)
 !
 !  2. Purpose
 !
@@ -1000,7 +998,6 @@
 !     following formulation:
 !                 1) Battjes and Janssen (1978)
 !                 2) Thornton and Guza (1983)
-!                 3) biphase scaling of Van der Westhuysen (2009)
 !
 !     Note: white capping is not taken into account
 !
@@ -1118,24 +1115,9 @@
 !
 !     and
 !
-!     for the weighting function W (or fraction of breaking waves), two choices can be made.
-!     The first one is after Thornton and Guza (1983):
-!
 !           Hrms  n
 !     W = (------)
 !           Hmax
-!
-!     and the second one is based on the biphase scaling of Van der Westhuysen (2009):
-!
-!               Beta    n
-!     W =   (----------)
-!             Beta_ref
-!
-!     where
-!                                                                                      1/2
-!              Pi   Pi         0.2               g                   sqr(Tm01) * 4*Etot
-!     Beta = - -- + -- * tanh (---)   and   Ur = ----------------- * ---------------------
-!               2    2          Ur               8*sqrt(2)*sqr(Pi)         sqr(d)
 !
 !
 !     For implementation details, see the Scientific/Technical documentation.
@@ -1180,7 +1162,6 @@
 !  6. Local variables
 !     BB      Rate between the total energy and the energy
 !             according to the maximum wave height HM
-!     BIPH    parameterized biphase of the spectrum
 !     DIS0    Dummy variable
 !     ID      Counter for directional steps
 !     IDDUM   Counter
@@ -1189,13 +1170,11 @@
 !     SURFA0  Coefficient for old source term in matrix equation
 !             (i.e. SURFA0 * Nold = right hand side of matrix equation)
 !     SURFA1  Coefficient for new source term in matrix equation
-!     WH      fraction of breaking waves
 !     WS      Wavebreaking source term coefficient = DTOT/ETOT
 !     SbrD    Derivative of source term for surf breaking (Sbr) to action density
 !
       INTEGER          ID,       IDDUM,   IENT,   IS
       REAL             PP,       FAC,     EPTOT,  ETOT0,
-     &                 BIPH,     DEPLOC,  URSLOC, WH, SMEAN,
      &                 ECS(MDC), FMIN,    FMAX,   FRFAC(MSC)
       DOUBLE PRECISION BB,       DIS0,    SbrD,
      &                 SURFA0,   SURFA1,  WS  ,
@@ -1294,45 +1273,6 @@
             SURFA1 = 0D0
          ENDIF
 !
-      ELSEIF ( ISURF.EQ.5 ) THEN                                          41.03
-!
-!        --- biphase scaling of Van der Westhuysen (2009)
-!
-         DEPLOC = HM/PSURF(2)
-         URSLOC = (GRAV*2.*SQRT(ETOT))/(SQRT(2.)*SMEBRK**2*DEPLOC**2)
-         BIPH = 0.5*PI*(TANH(PTRIAD(4)/URSLOC)-1.)
-         IF ( BIPH.LT.0. ) THEN
-!
-            IF ( PSURF(6).GT.0. ) THEN                                    41.09
-               SMEAN    = SQRT(8.*ETOT)*KMESPC/(2.*PI)                    41.09
-               PSURF(4) = 4.-(4./PI)*ATAN(PSURF(6)*(SMEAN-0.0375))        41.09
-            ENDIF                                                         41.09
-!
-            WH = (BIPH/PSURF(5))**PSURF(4)
-            WH = MIN(1.,WH)
-!
-            IF ( BB.GT.0D0 ) THEN
-               IF ( BB.LT.1D0 ) THEN
-                  WS = 75D-2*DBLE(WH)*DBLE(PSURF(2))*DBLE(PSURF(1))**3*
-     &                 DBLE(SMEBRK)*SQRT(BB)/DBLE(SQRT(PI))
-                  SbrD = (15D-1-25D-2*DBLE(PSURF(4))*
-     &                                          (1D0+5D0/DBLE(BIPH)))*WS
-               ELSE
-                  WS = 75D-2*DBLE(PSURF(2))*DBLE(PSURF(1))**3*
-     &                 DBLE(SMEBRK)/DBLE(SQRT(PI))
-                  SbrD = WS
-               ENDIF
-               SURFA0 = SbrD - WS
-               SURFA1 = SbrD
-            ELSE
-               SURFA0 = 0D0
-               SURFA1 = 0D0
-            ENDIF
-         ELSE
-            SURFA0 = 0D0
-            SURFA1 = 0D0
-         ENDIF
-!
       ENDIF
 !
 !     *** store the results for surf wave breaking  ***
@@ -1391,7 +1331,6 @@
      &                   IDCMIN  ,IDCMAX  ,ISSTOP  ,                      40.02
      &                   ETOT    ,IMATDA  ,IMATRA  ,PLWCAP  ,             40.02
      &                   CGO     ,UFRIC   ,                               40.53
-     &                   CAS     ,                                        41.11
      &                   DEP2    ,DISSC1  ,DISSC0  )                      40.67 40.61 40.12
 !
 !****************************************************************
@@ -1416,7 +1355,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1446,7 +1385,6 @@
 !     40.61: Marcel Zijlema
 !     40.63: Andre van der Westhuysen
 !     40.67: Nico Booij
-!     41.11: Andre van der Westhuysen
 !
 !  1. Updates
 !
@@ -1458,7 +1396,6 @@
 !     40.63, Apr. 07: a correction to Alves and Banner method
 !     40.67, Jun. 07: more accurate computation of source terms
 !                     DISSIP and DISIMP renamed DISSC1 and DISSC0 (as elsewhere)
-!     41.11, Oct. 09: Enhanced dissipation in counter current
 !
 !
 !  2. Purpose
@@ -1567,7 +1504,6 @@
       REAL, INTENT(INOUT) :: DISSC0(MDC,MSC,MDISP),DISSC1(MDC,MSC,MDISP)  40.67 40.12
       REAL, INTENT(IN)    :: UFRIC                                        40.53
       REAL, INTENT(IN)    :: CGO(MSC,MICMAX)                              40.53
-      REAL, INTENT(IN)    :: CAS(MDC,MSC,MICMAX)                          41.11
 !
 !  6. Local variables
 !
@@ -1594,7 +1530,6 @@
 !     STP_OV: Overall steepness
 !     STP_PM: Overall steepness for a Pierson-Moskowitz spectrum
 !     WCAP  : Whitecapping source-term
-!     WCCUR : Whitecapping source term due to opposing current
 !     WCIMPL: Implicit part of the whitecapping source-term
 !
       INTEGER, SAVE     :: IENT = 0
@@ -1608,7 +1543,6 @@
       REAL              :: B, P, BRKD, FBR                                40.63 40.53
       REAL              :: PWCAP1, PWCAP2, PWCAP9, PWCAP10, PWCAP11       40.63
       REAL              :: EF(MSC)                                        40.53
-      REAL              :: WCCUR(MDC,MSC)                                 41.11
 !
 !     8. REMARKS
 !
@@ -1652,7 +1586,6 @@
 !
       ALLOCATE (C_K(MSC), C_LH(MSC), WCAP(MSC), WCIMPL(MSC))
       WCIMPL(1:MSC) = 0.
-      WCCUR(1:MDC,1:MSC) = 0.                                             41.11
 !
 ! Calculate coefficients
 !
@@ -1767,15 +1700,6 @@
      &    (GRAV**(0.5)*KWAVE(IS,1)**(0.5)/SPCSIG(IS))**(PWCAP(10)/2-1) *  40.53
      &    GRAV**(0.5)*KWAVE(IS,1)**(0.5)                                  40.53
      &    + (1.-FBR) * C_K(IS) * SIGM_10 * (KWAVE(IS,1) / KM_WAM)         40.63
-!                                                                         41.11
-!  Calculate current-induced enhanced dissipation WCCUR(ID,IS)            41.11
-!                                                                         41.11
-          IF ( PWCAP(14).NE.0. ) THEN                                     41.11
-             DO ID = 1, MDC                                               41.11
-                WCCUR(ID,IS)=PWCAP(14)*MAX((CAS(ID,IS,1)/SPCSIG(IS)),0.)  41.11
-     &                       *(B/BRKD)**(P/2.)                            41.11
-             ENDDO                                                        41.11
-          ENDIF                                                           41.11
                                                                           40.53
         END DO                                                            40.53
       END IF                                                              40.53
@@ -1843,25 +1767,6 @@
         END DO
       END IF
 !
-! Add extra dissipation on opposing current, if appropriate               41.11
-!
-      IF ( IWCAP.EQ.7 .AND. PWCAP(14).NE.0. ) THEN
-!
-         DO IS=1, ISSTOP
-!
-!           Only fill the values for the current sweep
-!
-            DO IDDUM = IDCMIN(IS), IDCMAX(IS)
-               ID = MOD(IDDUM - 1 + MDC, MDC) + 1
-               IMATDA(ID,IS)   = IMATDA(ID,IS)   + WCCUR(ID,IS)
-               DISSC1(ID,IS,1) = DISSC1(ID,IS,1) + WCCUR(ID,IS)
-               IF (TESTFL) PLWCAP(ID,IS,IPTST) = PLWCAP(ID,IS,IPTST) -
-     &                                           WCCUR(ID,IS)
-            END DO
-         END DO
-!
-      ENDIF
-!
       DEALLOCATE (C_K, C_LH, WCAP, WCIMPL)
 !
       RETURN
@@ -1892,7 +1797,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -2178,7 +2083,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as

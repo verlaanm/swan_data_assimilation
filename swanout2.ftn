@@ -36,7 +36,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -277,7 +277,7 @@
         ENDIF
 !
   800 CONTINUE
-      IF (IPD.EQ.1) WRITE (PRINTF, 6030)
+      IF (IPD.EQ.1 .AND. NREF.EQ.PRINTF) WRITE (PRINTF, 6030)
  6030 FORMAT (///)
 !
       RETURN
@@ -309,7 +309,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -535,7 +535,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -683,7 +683,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -888,8 +888,8 @@
             WRITE (NREF, 20) OUT_COMMENT                                  40.13
 !           write (short) names of output quantities
             IF (RTYPE.EQ.'TABI') THEN
-              OUTLIN(1:9) = OUT_COMMENT // '        '                     40.13
-              LINKAR = 9
+              OUTLIN(1:12) = OUT_COMMENT // '           '                 40.13
+              LINKAR = 12
             ELSE
               OUTLIN(1:3) = OUT_COMMENT                                   40.13
               LINKAR = 4                                                  40.13
@@ -917,8 +917,8 @@
 !           write units of output quantities
             OUTLIN = '    '
             IF (RTYPE.EQ.'TABI') THEN
-              OUTLIN(1:9) = OUT_COMMENT // '        '                     40.13
-              LINKAR = 9
+              OUTLIN(1:12) = OUT_COMMENT // '           '                 40.13
+              LINKAR = 12
             ELSE
               OUTLIN(1:3) = OUT_COMMENT                                   40.13
               LINKAR = 4                                                  40.13
@@ -1008,7 +1008,7 @@
 !     ***** printing of the table *****
 !
       IF (RTYPE.EQ.'TABS') THEN
-        IF (NSTATM.EQ.1) WRITE (NREF, 102) CHTIME, 'date-time'
+        IF (NSTATM.EQ.1) WRITE (NREF, 102) CHTIME, 'date and time'
       ENDIF
       DO 70 IP = 1, MIP
        IF ( .NOT.PARLL .OR. IONOD(IP).EQ.INODE ) THEN                     40.51
@@ -1076,7 +1076,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1197,7 +1197,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1541,7 +1541,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1866,7 +1866,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as

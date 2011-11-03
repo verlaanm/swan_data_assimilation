@@ -50,7 +50,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -530,7 +530,7 @@
         CALL ININTG ('ITEST' , ITEST , 'STA', 30)
 !       statements restructured:
         IF (ITEST.GE.30) THEN
-          IF (ERRPTS.EQ.0.AND.INODE.EQ.MASTER) THEN                       40.30 40.13
+          IF (ERRPTS.EQ.0.AND.IAMMASTER) THEN                             40.95 40.30 40.13
             ERRPTS = 16
             OPEN (ERRPTS, FILE='ERRPTS',
      &            STATUS='UNKNOWN', FORM='FORMATTED')
@@ -1386,6 +1386,12 @@
           ALPC = PI2 * (ALTMP - NINT(ALTMP))
           CVLEFT = .TRUE.                                                 40.00
         ENDIF                                                             30.21
+!PUN!
+!PUN        IF (OPTG.NE.5) THEN                                               40.95
+!PUN           CALL MSGERR(4,
+!PUN     &               'Structured grid is not supported in parallel run')  40.95
+!PUN           RETURN                                                         40.95
+!PUN        ENDIF                                                             40.95
 !
         IF (OPTG.EQ.5) GOTO 555                                           40.80
 !
@@ -1984,8 +1990,6 @@
 !           |    RUEssink [alpha] [a] [b]                                      |
 !           |                                                                  |
 !           |    TG       [alpha] [gamma] [pown]                               |
-!           |                                                                  |
-!           !    WESTHuys [alpha] [pown] [bref] [shfac]                        |
 !
 !
 !       ( FREQDep [power] [fmin] [fmax] ) (fmin and fmax not documented)
@@ -2016,12 +2020,6 @@
           CALL INREAL ('ALPHA',  PSURF(1), 'STA', 1.0)
           CALL INREAL ('GAMMA',  PSURF(2), 'STA', 0.42)
           CALL INREAL ('POWN' ,  PSURF(4), 'STA', 4.0)
-        ELSE IF (KEYWIS('WESTH')) THEN                                    41.09 41.03
-          ISURF = 5
-          CALL INREAL ('ALPHA',  PSURF(1), 'STA', 0.98)                   41.09
-          CALL INREAL ('POWN' ,  PSURF(4), 'STA', 2.5)                    41.09
-          CALL INREAL ('BREF' ,  PSURF(5), 'STA', -1.3963)                41.09
-          CALL INREAL ('SHFAC',  PSURF(6), 'STA', 500.)                   41.09
         ENDIF
 !
         CALL INKEYW ('STA', '  ')                                         41.06
@@ -2051,10 +2049,6 @@
 !        |    KBJ     [bjstp] [bjalf] [kconv]
 !        |                                                                40.30
 !        |    AB      [cds2] [br] [p0] [powst] [powk]                     40.53
-!        |
-!        |    WESTHuy [cds2] [br] [p0] [powst] [powk] &                   41.11
-!        |
-!        |            [nldisp] [cds3] [powfsh]                            41.11
 !
 ! =============================================================
 !
@@ -2111,18 +2105,6 @@
           CALL INREAL ('P0',    PWCAP(10), 'STA', 4.)                     40.53
           CALL INREAL ('POWST', PWCAP(9),  'STA', 0.)                     40.53
           CALL INREAL ('POWK',  PWCAP(11), 'STA', 0.)                     40.53
-        ELSE IF ( KEYWIS ('WESTH')) THEN                                  41.11
-!         *** whitecapping according to Vd Westhuysen et al. (2007) ***   41.11
-!         *** incl. enhanced dissipation on current (yet unpublished)     41.11
-          IWCAP = 7                                                       41.11
-          CALL INREAL ('CDS2',  PWCAP(1),  'STA', 5.0E-5)                 41.11
-          CALL INREAL ('BR',    PWCAP(12), 'STA', 1.75E-3)                41.11
-          CALL INREAL ('P0',    PWCAP(10), 'STA', 4.)                     41.11
-          CALL INREAL ('POWST', PWCAP(9),  'STA', 0.)                     41.11
-          CALL INREAL ('POWK',  PWCAP(11), 'STA', 0.)                     41.11
-          CALL INREAL ('NLDISP',PWCAP(13), 'STA', 0.)                     41.11
-          CALL INREAL ('CDS3'  ,PWCAP(14), 'STA', 1.5)                    41.11
-          CALL INREAL ('POWFSH',PWCAP(15), 'STA', 1.)                     41.11
         ELSE
           CALL WRNKEY
         ENDIF
@@ -2697,7 +2679,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -3106,6 +3088,14 @@
       USE SWCOMM4                                                         40.41
       USE M_GENARR                                                        40.31
       USE SwanGriddata                                                    40.80
+!ADC      USE Couple2Swan, ONLY: ADCIRC_ETA2 => SWAN_ETA2,                    41.20
+!ADC     &                       ADCIRC_UU2 => SWAN_UU2,                      41.20
+!ADC     &                       ADCIRC_VV2 => SWAN_VV2,                      41.20
+!ADC     &                       ADCIRC_WX2 => SWAN_WX2,                      41.20
+!ADC     &                       ADCIRC_WY2 => SWAN_WY2,                      41.20
+!ADC     &                       COUPCUR, COUPWIND, COUPWLV                   41.20
+!ADC     &                      ,ADCIRC_Z0 => SWAN_Z0,                        41.20
+!ADC     &                       COUPFRIC                                     41.20
 !
 !
 !
@@ -3120,7 +3110,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -3148,6 +3138,7 @@
 !     40.31: Marcel Zijlema
 !     40.41: Marcel Zijlema
 !     40.55: Marcel Zijlema
+!     41.20: Casey Dietrich
 !
 !  1. Updates
 !
@@ -3162,6 +3153,7 @@
 !     40.31, Oct. 03: remove POOL construction
 !     40.41, Oct. 04: common blocks replaced by modules, include files removed
 !     40.55, Dec. 05: introducing vegetation model
+!     41.20, Mar. 10: extension to tightly coupled ADCIRC+SWAN model
 !
 !  2. Purpose
 !
@@ -3240,7 +3232,7 @@
 ! 13. Source text
 !
       REAL, ALLOCATABLE :: TARR(:)                                        40.31
-      LOGICAL    KEYWIS, VECTOR                                           30.00
+      LOGICAL    KEYWIS, VECTOR, LOCAL                                    40.95 30.00
       LOGICAL    LOGCOM(6)                                                30.21
       SAVE  IENT
       DATA  IENT/0/
@@ -3267,6 +3259,39 @@
         IGR1 = 2
         IGR2 = 3
         ICUR = 1
+!ADC      ELSE IF (KEYWIS ('ADCCUR')) THEN                                    41.20
+!ADC!       added this possibility for coupling to ADCIRC currents
+!ADC        IGR1 = 2
+!ADC        IGR2 = 3
+!ADC        ICUR = 1
+!ADC        COUPCUR = .TRUE.
+!ADC        IFLFAC(IGR1) = 1.0
+!ADC        IFLNDF(IGR1) = 0
+!ADC        IFLNDS(IGR1) = 22
+!ADC        IFLIDL(IGR1) = 1
+!ADC        IFLIFM(IGR1) = 2
+!ADC        IFLFRM(IGR1) = '(12X,E15.10)'
+!ADC        IFLNHF(IGR1) = 2
+!ADC        IFLDYN(IGR1) = 1
+!ADC        IFLNHD(IGR1) = 1
+!ADC        VECTOR = .TRUE.
+!ADC        NHEDC = 0
+!ADC        IFLFAC(IGR2) = IFLFAC(IGR1)
+!ADC        IFLNDF(IGR2) = IFLNDF(IGR1)
+!ADC        IFLNDS(IGR2) = IFLNDS(IGR1)
+!ADC        IFLIDL(IGR2) = IFLIDL(IGR1)
+!ADC        IFLIFM(IGR2) = IFLIFM(IGR1)
+!ADC        IFLFRM(IGR2) = IFLFRM(IGR1)
+!ADC        IFLNHF(IGR2) = IFLNHF(IGR1)
+!ADC        IFLNHD(IGR2) = NHEDC
+!ADC        IF (.NOT.ALLOCATED(TARR)) THEN
+!ADC           ALLOCATE( TARR(1:nverts) )
+!ADC           TARR = 0.
+!ADC        ENDIF
+!ADC        DO I=1,nverts
+!ADC           TARR(I) = REAL(ADCIRC_UU2(I,1))
+!ADC        ENDDO
+!ADC        GOTO 55
       ELSE IF (KEYWIS ('FR')) THEN
         IGR1   = 4
         VARFR  = .TRUE.
@@ -3274,15 +3299,103 @@
         JFRC2  = MCMVAR - 1                                               40.00
         JFRC3  = MCMVAR                                                   40.00
         ALOCMP = .TRUE.                                                   40.97
+!ADC      ELSE IF (KEYWIS ('ADCFRIC')) THEN                                   41.20
+!ADC!       added this possibility for coupling Madsen friction lengths
+!ADC!       based on ADCIRC Manning's n values
+!ADC        IGR1 = 4
+!ADC        VARFR = .TRUE.
+!ADC        MCMVAR = MCMVAR + 2
+!ADC        JFRC2  = MCMVAR - 1
+!ADC        JFRC3  = MCMVAR
+!ADC        ALOCMP = .TRUE.
+!ADC        COUPFRIC = .TRUE.
+!ADC        IFLFAC(IGR1) = 1.0
+!ADC        IFLNDF(IGR1) = 0
+!ADC        IFLNDS(IGR1) = 23
+!ADC        IFLIDL(IGR1) = 1
+!ADC        IFLIFM(IGR1) = 2
+!ADC        IFLFRM(IGR1) = '(12X,E20.10)'
+!ADC        IFLNHF(IGR1) = 2
+!ADC        IFLDYN(IGR1) = 1
+!ADC        IFLNHD(IGR1) = 1
+!ADC        VECTOR = .FALSE.
+!ADC        NHEDC = 0
+!ADC        IF (.NOT.ALLOCATED(TARR)) THEN
+!ADC           ALLOCATE( TARR(1:nverts) )
+!ADC           TARR = 0.
+!ADC        ENDIF
+!ADC        DO I=1,nverts
+!ADC           TARR(I) = REAL(ADCIRC_Z0(I,1))
+!ADC        ENDDO
+!ADC        GOTO 55
       ELSE IF (KEYWIS ('WI')) THEN
         LWINDR = 2                                                        30.10
         IWIND  = LWINDM                                                   30.10
         IGR1   = 5
         IGR2   = 6
         VARWI  = .TRUE.
+!ADC      ELSE IF (KEYWIS ('ADCWIND')) THEN                                   41.20
+!ADC!       added this possibility for coupling to ADCIRC wind speeds
+!ADC        LWINDR = 2
+!ADC        IWIND  = LWINDM
+!ADC        IGR1 = 5
+!ADC        IGR2 = 6
+!ADC        VARWI = .TRUE.
+!ADC        COUPWIND = .TRUE.
+!ADC        IFLFAC(IGR1) = 1.0
+!ADC        IFLNDF(IGR1) = 0
+!ADC        IFLNDS(IGR1) = 22
+!ADC        IFLIDL(IGR1) = 1
+!ADC        IFLIFM(IGR1) = 2
+!ADC        IFLFRM(IGR1) = '(12X,E15.10)'
+!ADC        IFLNHF(IGR1) = 2
+!ADC        IFLDYN(IGR1) = 1
+!ADC        IFLNHD(IGR1) = 1
+!ADC        VECTOR = .TRUE.
+!ADC        NHEDC = 0
+!ADC        IFLFAC(IGR2) = IFLFAC(IGR1)
+!ADC        IFLNDF(IGR2) = IFLNDF(IGR1)
+!ADC        IFLNDS(IGR2) = IFLNDS(IGR1)
+!ADC        IFLIDL(IGR2) = IFLIDL(IGR1)
+!ADC        IFLIFM(IGR2) = IFLIFM(IGR1)
+!ADC        IFLFRM(IGR2) = IFLFRM(IGR1)
+!ADC        IFLNHF(IGR2) = IFLNHF(IGR1)
+!ADC        IFLNHD(IGR2) = NHEDC
+!ADC        IF (.NOT.ALLOCATED(TARR)) THEN
+!ADC           ALLOCATE( TARR(1:nverts) )
+!ADC           TARR = 0.
+!ADC        ENDIF
+!ADC        DO I=1,nverts
+!ADC           TARR(I) = REAL(ADCIRC_WX2(I,1))
+!ADC        ENDDO
+!ADC        GOTO 55
       ELSE IF (KEYWIS ('WL')) THEN                                        20.38
         IGR1   = 7
         VARWLV = .TRUE.                                                   20.38
+!ADC      ELSE IF (KEYWIS ('ADCWL')) THEN                                     41.20
+!ADC!       added this possibility for coupling to ADCIRC water levels
+!ADC        IGR1 = 7
+!ADC        VARWLV = .TRUE.
+!ADC        COUPWLV = .TRUE.
+!ADC        IFLFAC(IGR1) = 1.0
+!ADC        IFLNDF(IGR1) = 0
+!ADC        IFLNDS(IGR1) = 23
+!ADC        IFLIDL(IGR1) = 1
+!ADC        IFLIFM(IGR1) = 2
+!ADC        IFLFRM(IGR1) = '(12X,E20.10)'
+!ADC        IFLNHF(IGR1) = 2
+!ADC        IFLDYN(IGR1) = 1
+!ADC        IFLNHD(IGR1) = 1
+!ADC        VECTOR = .FALSE.
+!ADC        NHEDC = 0
+!ADC        IF (.NOT.ALLOCATED(TARR)) THEN
+!ADC           ALLOCATE( TARR(1:nverts) )
+!ADC           TARR = 0.
+!ADC        ENDIF
+!ADC        DO I=1,nverts
+!ADC           TARR(I) = REAL(ADCIRC_ETA2(I,1))
+!ADC        ENDDO
+!ADC        GOTO 55
       ELSE IF (KEYWIS ('COOR')) THEN                                      30.21
         IGR1   = 8                                                        30.21
         IGR2   = 9                                                        30.21
@@ -3328,9 +3441,16 @@
         VECTOR = .FALSE.
       ENDIF
 !
+      LOCAL = .FALSE.                                                     40.95
+!PUN      IF ( IGTYPE(IGR1).EQ.3 ) THEN                                       40.95
+!PUN         LOCAL = .TRUE.                                                   40.95
+!PUN      ELSE                                                                40.95
+!PUN         LOCAL = .FALSE.                                                  40.95
+!PUN      ENDIF                                                               40.95
+!
       CALL REPARM (IFLNDF(IGR1), IFLNDS(IGR1), IFLIDL(IGR1),              40.00
      &             IFLIFM(IGR1), IFLFRM(IGR1), IFLNHF(IGR1),              40.00
-     &             IFLDYN(IGR1), IFLNHD(IGR1), VECTOR, NHEDC)             40.00
+     &             IFLDYN(IGR1), IFLNHD(IGR1), VECTOR, LOCAL, NHEDC)      40.95 40.00
       IF (STPNOW()) RETURN                                                34.01
 !
       IF (ITEST.GE.60) WRITE (PRTEST, 35) IGR1, IFLNDF(IGR1),
@@ -3371,6 +3491,7 @@
      &             IFLIDL(IGR1), IFLFAC(IGR1),
      &             IFLNHD(IGR1), IFLNHF(IGR1))
       IF (STPNOW()) RETURN                                                34.01
+  55  CONTINUE                                                            41.20
       IF (IGR1.EQ.1) THEN                                                 40.31
          IF (.NOT.ALLOCATED(DEPTH)) ALLOCATE(DEPTH(MXG(IGR1)*MYG(IGR1)))  40.31
          CALL SWCOPR( TARR, DEPTH, MXG(IGR1)*MYG(IGR1) )                  40.31
@@ -3402,11 +3523,21 @@
            ALLOCATE( TARR(MXG(IGR2)*MYG(IGR2)) )                          40.41
            TARR = 0.                                                      40.41
         END IF                                                            40.41
+!ADC        IF ( IGR2.EQ.3 .AND. COUPCUR ) THEN                               41.20
+!ADC           DO I = 1, nverts                                               41.20
+!ADC              TARR(I) = REAL(ADCIRC_VV2(I,1))                             41.20
+!ADC           ENDDO                                                          41.20
+!ADC        ELSE IF ( IGR2.EQ.6 .AND. COUPWIND ) THEN                         41.20
+!ADC           DO I = 1, nverts                                               41.20
+!ADC              TARR(I) = REAL(ADCIRC_WY2(I,1))                             41.20
+!ADC           ENDDO                                                          41.20
+!ADC        ELSE                                                              41.20
         CALL INAR2D( TARR        , MXG(IGR2), MYG(IGR2), IFLNDF(IGR2),    40.31 40.02
      &               IFLNDS(IGR2), IFLIFM(IGR2), IFLFRM(IGR2),
      &               IFLIDL(IGR2), IFLFAC(IGR2),
      &               IFLNHD(IGR2), 0)
         IF (STPNOW()) RETURN                                              34.01
+!ADC        ENDIF                                                             41.20
         IF (IGR2.EQ.3) THEN                                               40.31
            IF (.NOT.ALLOCATED(UYB)) ALLOCATE(UYB(MXG(IGR2)*MYG(IGR2)))    40.31
            CALL SWCOPR( TARR, UYB, MXG(IGR2)*MYG(IGR2) )                  40.31
@@ -3460,7 +3591,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -3627,7 +3758,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -3889,7 +4020,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4011,8 +4142,6 @@
                   LXOFFS = .TRUE.
                   XCGRID(IX,IY) = 0.
                   YCGRID(IX,IY) = 0.
-                  EXCFLD(8) = REAL(EXCFLD(8) - DBLE(XOFFS))
-                  EXCFLD(9) = REAL(EXCFLD(9) - DBLE(YOFFS))
                 ELSE
                   XCGRID(IX,IY) = REAL(XCGRID(IX,IY) - DBLE(XOFFS))       30.72
                   YCGRID(IX,IY) = REAL(YCGRID(IX,IY) - DBLE(YOFFS))       30.72
@@ -4039,6 +4168,9 @@
           ENDIF                                                           30.60
   61    CONTINUE                                                          30.72
   62  CONTINUE                                                            30.72
+!
+      EXCFLD(8) = REAL(EXCFLD(8) - DBLE(XOFFS))
+      EXCFLD(9) = REAL(EXCFLD(9) - DBLE(YOFFS))
 !
       IF (MCGRD.LE.1) CALL MSGERR (3, 'No valid grid points found')       30.60
       IF (ITEST.GE.60) WRITE(PRINTF,*)
@@ -4103,7 +4235,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4468,7 +4600,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4578,7 +4710,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4750,7 +4882,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4907,6 +5039,7 @@
       USE TIMECOMM                                                        40.41
       USE M_PARALL                                                        40.31
       USE SwanGriddata                                                    40.80
+!PUN      USE SIZES                                                           40.95
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -4920,7 +5053,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -5159,6 +5292,7 @@
            WRITE(FILENM(ILPOS+1:ILPOS+4),33) INODE                        40.31
   33       FORMAT('-',I3.3)                                               40.31
         END IF                                                            40.31
+!PUN        IF (.NOT.SINGLEHOT) FILENM= TRIM(LOCALDIR)//DIRCH2//TRIM(FILENM)  40.95
         NREF   = 0
         IOSTAT = 0
         CALL FOR (NREF, FILENM, 'OF', IOSTAT)
@@ -5375,6 +5509,8 @@
       USE SWCOMM4                                                         40.41
       USE M_PARALL                                                        40.31
       USE SwanGriddata                                                    40.80
+!PUN      USE SIZES                                                           40.95
+!ADC      USE Couple2Swan, ONLY: SwanHotStartUnit                             41.20
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -5388,7 +5524,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -5418,6 +5554,7 @@
 !     40.31: Marcel Zijlema
 !     40.41: Marcel Zijlema
 !     40.80: Marcel Zijlema
+!     41.20: Casey Dietrich
 !
 !  1. Updates
 !
@@ -5430,6 +5567,7 @@
 !                     parallel computing
 !     40.41, Oct. 04: common blocks replaced by modules, include files removed
 !     40.80, Jun. 07: extension to unstructured grids
+!     41.20, Mar. 10: extension to tightly coupled ADCIRC+SWAN model
 !
 !  2. Purpose
 !
@@ -5471,18 +5609,26 @@
 !
 !     ==================================================================
 !
-      CALL INCSTR ('FNAME', FILENM, 'REQ', ' ')
+!NADC      CALL INCSTR ('FNAME', FILENM, 'REQ', ' ')
+!ADC      IF ( SwanHotStartUnit.EQ.67 ) THEN                                  41.20
+!ADC         FILENM = "swan.67"
+!ADC         SwanHotStartUnit = 68
+!ADC      ELSE
+!ADC         FILENM = "swan.68"
+!ADC         SwanHotStartUnit = 67
+!ADC      ENDIF
 !     --- append node number to FILENM in case of parallel computing      40.31
       IF ( PARLL ) THEN                                                   40.31
          ILPOS = INDEX ( FILENM, ' ' )-1                                  40.31
          WRITE(FILENM(ILPOS+1:ILPOS+4),33) INODE                          40.31
   33     FORMAT('-',I3.3)                                                 40.31
       END IF                                                              40.31
+!PUN      FILENM = TRIM(LOCALDIR)//DIRCH2//TRIM(FILENM)                       40.95
       NREF   = 0
       IOSTAT = 0
       CALL FOR (NREF, FILENM, 'UF', IOSTAT)
       IF (STPNOW()) RETURN                                                34.01
-      WRITE (NREF, 102) 'SWAN   1', 'SWAN standard file, with version'
+      WRITE (NREF, 102) 'SWAN   1', 'Swan standard file, version'
       IF (NSTATM.EQ.1) THEN
         WRITE (NREF, 102) 'TIME', 'time-dependent data'
  102    FORMAT (A, T41, A)                                                40.00

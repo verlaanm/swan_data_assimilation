@@ -17,7 +17,7 @@
 \end{center}
 \vfill
 \begin{center}
-{\Large\bf SWAN Cycle III version 40.81}
+{\Large\bf SWAN Cycle III version 40.85}
 \end{center}
 
 \cleardoublepage
@@ -46,7 +46,7 @@ home page    &:& \hl{http://www.swan.tudelft.nl}
 \vfill
 
 \noindent
-Copyright (c) 1993-2010 Delft University of Technology.
+Copyright (c) 1993-2011 Delft University of Technology.
 \\[2ex]
 \noindent
 Permission is granted to copy, distribute and/or modify this document
@@ -680,9 +680,6 @@ can be found in Nelson (1987) and Ruessink et al. (2003). (Both are implemented 
 The constant value is $\gamma=0.73$ found as
 the mean value of the data set of Battjes and Stive (1985).
 \nocite{Bat78J,Tho83G,Bat92B,Vin94SD,Arc94RC,Eld96B,Eld95B,Mas92K,Elg97GRHG,Che97GE,Nel87,Rue03WS,Bat85S}
-%In order to unify these parameterizations, Van der Westhuysen (2009a,b) proposes an alternative breaker
-%index that is based on the local shallow water nonlinearity of the wave field.
-%\nocite{Wes09a,Wes09b}
 \\[2ex]
 \noindent
 \underline{Nonlinear wave-wave interactions}\\[2ex]
@@ -980,24 +977,6 @@ scaling condition requires the additional dimensionless factor ${\tanh(kh)}^{-1/
 \nocite{Res04LV}
 \\[2ex]
 \noindent
-%\underline{Whitecapping: dissipation on opposing current}\\[2ex]
-%When a wave field meets an adverse current with a velocity that approaches the wave group velocity,
-%waves are blocked, which may cause steepness-induced breaking and reflection. Ris and Holthuijsen (1996)
-%show that SWAN underestimates wave dissipation in such situations, leading to a strong overestimation
-%in the significant wave height. Van der Westhuysen (2009c) proposes a saturation-based whitecapping
-%expression for the required enhanced dissipation. The dissipation due to current influence is taken
-%to be proportional to the relative increase in steepness due to the opposing current, expressed in terms
-%of the propagation velocity in spectral space $c_\sigma$:
-%\begin{equation}
-%  S_{\rm ds,c}(\sigma,\theta) = -C''_{\rm ds} \max{\left[ \frac{c_\sigma(\sigma,\theta)}{\sigma} , 0 \right]}
-%  {\left[ \frac{B(k)}{B_{\rm r}} \right]}^{p/2} E(\sigma,\theta)  \ \ .
-%  \label{eq:wccur}
-%\end{equation}
-%The proportionality coefficient is set to $C''_{\rm ds}$ = 1.5. The remaining parameters are given by
-%Van der Westhuysen (2007), namely $B_{\rm r} = 1.75 \times 10^{-3}$ and $p$ according to (\ref{eq:expo}).
-%\nocite{Ris96H,Wes09c}
-%\\[2ex]
-%\noindent
 \underline{Bottom friction}\\[2ex]
 The bottom friction models that have been selected for SWAN are the empirical model of JONSWAP
 (Hasselmann~{\it et~al}., 1973), the drag law model of Collins (1972) and the eddy-viscosity model of
@@ -1009,7 +988,7 @@ Madsen~{\it et~al}. (1988). The formulations for these bottom friction models ca
 in which $C_{\rm b}$ is a bottom friction coefficient that generally depends on the bottom orbital motion
 represented by $U_{\rm rms}$:
 \begin{equation}
-  U^2_{\rm rms} = 2\,\int_{0}^{2\pi} \int_{0}^{\infty} \frac{\sigma^2}{g^2 \sinh^2 kd} E(\sigma,\theta) d\sigma d\theta
+  U^2_{\rm rms} = \int_{0}^{2\pi} \int_{0}^{\infty} \frac{\sigma^2}{\sinh^2 kd} E(\sigma,\theta) d\sigma d\theta
   \label{eq3-18}
 \end{equation}
 Hasselmann~{\it et~al}. (1973) found $C_{\rm b}=C_{\rm JON}=0.038$m$^{2}$s$^{-3}$ which is in
@@ -1021,7 +1000,7 @@ Both values are available in SWAN.
 \noindent
 The expression of Collins (1972) is based on a conventional formulation for periodic waves with the
 appropriate parameters adapted to suit a random wave field. The dissipation rate is calculated with the
-conventional bottom friction formulation of Eq. (\ref{eq3-2}) in which the bottom friction coefficient is
+conventional bottom friction formulation of Eq. (\ref{eq3-17}) in which the bottom friction coefficient is
 $C_{\rm b} = C_f g U_{\rm rms}$ with $C_f = 0.015$ (Collins, 1972)\footnote{Collins (1972) contains
 an error in the expression due to an erroneous Jacobian transformation. See page A-16 of Tolman (1990).}.
 \\[2ex]
@@ -1144,34 +1123,6 @@ Hence,
   D_{\rm tot} = - \frac{3 B^3 \tilde{\sigma}}{32 \sqrt{\pi} d} \, Q_b\, H^3_{\rm rms}
   \label{eq:tg83_2}
 \end{equation}
-%\\[2ex]
-%\noindent
-%Van der Westhuysen (2009b) shows that there appears to be a correlation between the nonlinearity of waves in the
-%surf zone, i.e. wave asymmetry, and their breaking probability. A parameter that can represent wave asymmetry in SWAN
-%is the biphase $\beta$, the phase angle of the complex bispectrum. This biphase is known to progress from 0 to $-\pi/2$
-%(or from small values to high values of Ursell number)
-%due to triad nonlinear interaction in a shoaling wave. In SWAN, the biphase is parametrized according to expression
-%(\ref{eq3-36}). Van der Westhuysen proposes the following fraction of breaking waves, to be used in (\ref {eq:tg83_2}):
-%\begin{equation}
-%  Q_b = \left( \frac{\beta}{\beta_{\rm ref}} \right)^n\ \ ,
-%\end{equation}
-%with $\beta_{\rm ref}$ a tunable reference value. Again, $n$ is a parameter to be determined by calibration. In this way,
-%it is assumed that the waves breaking due to their shallow water nonlinearity are distributed proportionally over the
-%probability density function of wave heights. Van der Westhuysen (2009a) estimates the reference biphase at
-%$\beta_{\rm ref} = -4\pi/9$, and shows that the exponent $n$ varies with the mean local wave steepness $S_{\mathrm{loc}}$
-%according to
-%\begin{equation}
-%  n = 4 - \frac{4}{\pi}\arctan \left[ 500\left( S_{\mathrm{loc}}-\tilde{S}_{\mathrm{loc}} \right) \right]
-%  \label{eq:nvar}
-%\end{equation}
-%in which $S_{\mathrm{loc}}$ is defined as
-%\begin{equation}
-%  S_{\mathrm{loc}} = \frac{H_{\mathrm{rms}} \tilde{k}}{2 \pi} \ , \ \ \ \ \
-%  \tilde{k} = \left[ \frac{\int \!\!\! \int k^{-\frac{1}{2}} E (\sigma,\theta) \,d\sigma\,d\theta}{E_{\mathrm{tot}}} \right]^{-2} ,
-%  \label{eq:sloc_vink}
-%\end{equation}
-%with an average value of $\tilde{S}_{\mathrm{loc}}$ = 0.038. This so-called biphase breaker model of
-%Van der Westhuysen is implemented in SWAN using a calibrated proportionality coefficient of $B=0.98$ (Van der Westhuysen, 2009a).
 
 \subsection{Nonlinear wave-wave interactions ($S_{\rm nl}$)} \label{sec:waveint}
 
@@ -3304,41 +3255,6 @@ Finally, the approximation of the source term reads
 \begin{equation}
   S^{n+1}_{i} = {\tilde D} \left( 1 + \frac{Q_b - 1}{Q_b - {\cal B}} \right)_i^n E_i^{n+1} - {\tilde D} \, \frac{Q_b - 1}{Q_b - {\cal B}} |^n_i E_i^n
 \end{equation}
-%\\[2ex]
-%Similarly, the surf breaking source term for the biphase scaling of Van der Westhuysen (2009) can be implemented using
-%expression (\ref{eq:st1}) with
-%\begin{equation}
-%  {\tilde D} = - \frac{3}{4} \frac{B^3 \tilde{\sigma}}{\sqrt{\pi}\,d} \, \left( \frac{\beta}{\beta_{\rm ref}} \right)^n \, H_{\rm rms}
-%             = - \frac{3}{4} \gamma \frac{B^3 \tilde{\sigma}}{\sqrt{\pi}} \, \left( \frac{\beta}{\beta_{\rm ref}} \right)^n \, \sqrt{\cal B}
-%\end{equation}
-%Note, that $\gamma = H_{\rm max}/d$ is not used in the biphase scaling. (It is just a help variable since we need the parameter $\cal B$.)
-%Again, we apply the Newton linearisation (\ref{eq:newlin}):
-%\begin{equation}
-%   S^{n+1}_{i} \approx \left( \frac{\partial S}{\partial E} \right)_i^n E_i^{n+1} + \left( {\tilde D} - \left( \frac{\partial S}{\partial E} \right)_i^n \right) E_i^n
-%\end{equation}
-%For the derivative $\partial S/\partial E$, we need the derivative of ${\tilde D}$ to $\cal B$ for the application of (\ref{eq:st4}).
-%Since, the biphase $\beta$, as given by
-%\begin{equation}
-%  \beta = -\frac{\pi}{2} + \frac{\pi}{2}\, \tanh(\frac{0.2}{\rm Ur}) \, , \quad {\rm Ur} \sim H_{\rm rms}
-%  \label{eq:biphase}
-%\end{equation}
-%is a function of ${\cal B}$ as well, we need an expression for the derivative $d \beta/d {\cal B}$. The transcendent formula (\ref{eq:biphase}) may be
-%approximated with the following more simpler expression
-%\begin{equation}
-%  \beta = p + q\,{\cal B}^{-1/4}
-%\end{equation}
-%with $p$ and $q$ some parameters to be determined.
-%As a result, we have
-%\begin{equation}
-%  \frac{\partial S}{\partial E} |_i = \left [ \frac{3}{2}  - \frac{1}{4} n \left( 1 - \frac{p}{\beta} \right) \right ] {\tilde D} |_i < 0\, , \quad \forall p < 0\, ,
-%  \, \, \forall n > 0
-%\end{equation}
-%The choice of $p$ only influences the numerical stability, not the outcomes! Based on some numerical experiments, we found $p = -5$.
-%So,
-%\begin{equation}
-%   S^{n+1}_{i} = \left [ \frac{3}{2}  - \frac{1}{4} n \left( 1 + \frac{5}{\beta} \right) \right ] {\tilde D} |_i^n E_i^{n+1} -
-%   \left [ \frac{1}{2}  - \frac{1}{4} n \left( 1 + \frac{5}{\beta} \right) \right ] {\tilde D} |_i^n E_i^n
-%\end{equation}
 
 \chap{Wave boundary and initial conditions} \label{ch:bc}
 
@@ -5274,17 +5190,6 @@ Delft University of Technology, Department of Civil Engineering, The Netherlands
 \bibitem{Wes07ZB}
 Van der Westhuysen, A.J., M. Zijlema and J.A. Battjes, 2007: Nonlinear saturation-based whitecapping dissipation
 in SWAN for deep and shallow water, {\it Coast. Engng}., {\bf 54}, 151-170
-
-%\bibitem{Wes09a}
-%Van der Westhuysen, A.J., 2009: Modelling of depth-induced wave breaking over sloping and horizontal beds,
-%{\it Proc. 11th International Workshop on Wave Hindcasting and Forecasting}., JCOMM, {\it in press}.
-
-%\bibitem{Wes09b}
-%Van der Westhuysen, A.J., 2009: Modelling of depth-induced wave breaking under finite-depth wave growth
-%conditions, {\it J. Geophys. Res}., {\it in press}.
-
-%\bibitem{Wes09c}
-%Van der Westhuysen, A.J., 2009: Wave dissipation on opposing current, {\it J. Geophys. Res}., {\it in preparation}.
 
 \bibitem{Wil65}
 Wilson, B.W., 1965: Numerical prediction of ocean waves in the North Atlantic for December 1959,

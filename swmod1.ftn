@@ -26,7 +26,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -184,7 +184,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -306,7 +306,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -409,7 +409,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -552,7 +552,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -596,6 +596,7 @@
 !     40.85, Aug. 08: NMOVAR increased by 10 (quantities GENE, GENW, REDI, REDQ, REDT,
 !                                             PROPA, PROPX, PROPT, PROPS and RADS added)
 !     41.12, Apr. 10: NMOVAR increased by 1 (quantity NPL added)
+!     41.15, Mar. 11: NMOVAR increased by 1 (quantity LWAVP added)
 !
 !  2. Purpose
 !
@@ -621,7 +622,7 @@
 !     MOUTPA [  50]  number of output parameters                          40.87
 !
       INTEGER NMOVAR, MOUTPA
-      PARAMETER (NMOVAR = 70, MOUTPA=50)                                  40.85 40.87 40.64 40.61 40.51 40.21 40.41
+      PARAMETER (NMOVAR = 71, MOUTPA=50)                                  41.15 40.85 40.87 40.64 40.61 40.51 40.21 40.41
 !
 !  7. Local variables
 !
@@ -695,6 +696,7 @@
 !  (68) [ 'PROPS']
 !  (69) [  'RADS']
 !  (70) [   'NPL']
+!  (71) [ 'LWAVP']
 ! OVSNAM(NMOVAR)   short name of output quantity
 !  ( 1) [    'Xp']
 !  ( 2) [    'Yp']
@@ -761,6 +763,7 @@
 !  (68) ['Propsi']
 !  (69) ['Radstr']
 !  (70) ['Nplant']
+!  (71) [ 'Lwavp']
 ! OVLNAM(NMOVAR)   long name of output quantity
 !  ( 1) [                        'X user coordinate']
 !  ( 2) [                        'Y user coordinate']
@@ -827,6 +830,7 @@
 !  (68) [                        'sigma-propagation']
 !  (69) [                         'Radiation stress']
 !  (70) [                            'Plants per m2']
+!  (71) [                         'Peak wave length']
 ! OVUNIT(NMOVAR)   unit of of output quantity
 !  ( 1) [CALCULAT] =UL
 !  ( 2) [CALCULAT] =UL
@@ -893,6 +897,7 @@
 !  (68) [  'm2/s'] change to UDL ???, changed to 'W/m2', if INRHOG=1
 !  (69) [  'm2/s'] change to UDL ???, changed to 'W/m2', if INRHOG=1
 !  (70) [  '1/m2']
+!  (71) [CALCULAT] =UL
 ! SNAME [        ] name of output point set
 ! UAP   [  'W/m2'] unit of dissipation
 ! UD    [        ] not used
@@ -1004,6 +1009,7 @@
 !  (68)  [  1]   Propsi
 !  (69)  [  1]   Radstr
 !  (70)  [  1]   Nplant
+!  (71)  [  1]   Lwavp
 ! OVEXCV(NMOVAR)   exception value for output quantity
 !  ( 1)  [ -1.E10] Xp
 !  ( 2)  [ -1.E10] Yp
@@ -1068,6 +1074,7 @@
 !  (68)  [    -9.] Propsi
 !  (69)  [    -9.] Radstr
 !  (70)  [    -9.] Nplant
+!  (71)  [    -9.] Lwavp
 ! OVLEXP(NMOVAR)   lower expected limit of output quantity
 !  ( 1)  [ -1.E10] Xp
 !  ( 2)  [ -1.E10] Yp
@@ -1132,6 +1139,7 @@
 !  (68)  [     0.] Propsi
 !  (69)  [     0.] Radstr
 !  (70)  [     0.] Nplant
+!  (71)  [     0.] Lwavp
 ! OVLLIM(NMOVAR)   lower limit of validity of output quantity
 !  ( 1)  [ -1.E10] Xp
 !  ( 2)  [ -1.E10] Yp
@@ -1196,6 +1204,7 @@
 !  (68)  [     0.] Propsi
 !  (69)  [     0.] Radstr
 !  (70)  [     0.] Nplant
+!  (71)  [     0.] Lwavp
 ! OVHEXP(NMOVAR)   upper expected limit of output quantity
 !  ( 1)  [  1.E10] Xp
 !  ( 2)  [  1.E10] Yp
@@ -1260,6 +1269,7 @@
 !  (68)  [    0.1] Propsi
 !  (69)  [    0.1] Radstr
 !  (70)  [   100.] Nplant
+!  (71)  [   200.] Lwavp
 ! OVULIM(NMOVAR)   upper limit of validity
 !  ( 1)  [  1.E10] Xp
 !  ( 2)  [  1.E10] Yp
@@ -1324,6 +1334,7 @@
 !  (68)  [  1000.] Propsi
 !  (69)  [  1000.] Radstr
 !  (70)  [  1000.] Nplant
+!  (71)  [  1000.] Lwavp
 ! SINCQ  [       ] sin of ALCQ
 ! SINPQ  [       ] sin of ALPQ
 ! SPCPOW [      1] power in expression for computation of average frequency
@@ -1382,7 +1393,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1403,10 +1414,12 @@
 !  0. Authors
 !
 !     40.41: Marcel Zijlema
+!     41.13: Nico Booij
 !
 !  1. Updates
 !
 !     40.41, Oct. 04: taken from the include file SWCOMM2.INC
+!     41.13, Jul. 10: NWAMN unused, replaced by LWDATE (length of WAM date)
 !
 !  2. Purpose
 !
@@ -1471,10 +1484,10 @@
 !                        =2 when grid is curvilinear
 ! LEDS(NUMGRD)  [     0] =0 when values have not been read
 !                        =1 if values were read
+! LWDATE        [     0] length of date-time in WAM file
 ! LXOFFS        [   FAL] offset values were/were not initialized already
 ! MXG(NUMGRD)   [     0] number of meshes in x-direction
 ! MYG(NUMGRD)   [     0] number of meshes in y-direction
-! NWAMN         [     0] indicator (=1) for a WAM-nested run
 ! OPTG          [     1] type of the computational grid
 !                        =1 when regular
 !                        =2 when irregular, but rectangular (not used)
@@ -1507,7 +1520,7 @@
 !
       INTEGER ICOND
       INTEGER IGTYPE(NUMGRD),           LEDS(NUMGRD)
-      INTEGER MXG(NUMGRD), MYG(NUMGRD), NWAMN
+      INTEGER MXG(NUMGRD), MYG(NUMGRD), LWDATE
       INTEGER OPTG,        NBFILS,      NBSPEC,      NBGRPT
       REAL    ALPG(NUMGRD),             COSPG(NUMGRD)
       REAL    COSVC,       COSWC,       DXG(NUMGRD)
@@ -1583,7 +1596,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -2019,7 +2032,6 @@
 !                 =2; for command BRE VAR ..., surf breaking according to Nelson
 !                 =3; for command BRE RUE ..., surf breaking according to Ruessink
 !                 =4; for command BRE TG ... , surf breaking according to Thornton and Guza
-!                 =5; for command BRE WESTH ..., surf breaking according to biphase scaling
 ! ITERMX [      ] maximum number of iterations:
 !                 is set equal to MXITST in case of stationary computations
 !                 is set equal to MXITNS in case of nonstationary computations
@@ -2422,7 +2434,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -2578,7 +2590,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as

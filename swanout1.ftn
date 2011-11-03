@@ -47,7 +47,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -285,7 +285,7 @@
            GOTO 70                                                        40.31 30.00
         END IF
 !
-        IF (SCREEN.NE.PRINTF.AND.INODE.EQ.MASTER) WRITE (SCREEN, 15) IRQ  40.30
+        IF (SCREEN.NE.PRINTF.AND.IAMMASTER) WRITE (SCREEN, 15) IRQ        40.30
   15    FORMAT ('+SWAN is processing output request ', I4)                40.41 30.00
         IF (ITEST.GE.10) WRITE(PRINTF,16) IRQ
   16    FORMAT (' SWAN is processing output request ', I4)                40.41
@@ -481,7 +481,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -717,7 +717,7 @@
          IF (IVTYPE.EQ.15 .OR. IVTYPE.EQ.17 .OR. IVTYPE.EQ.18 .OR.
      &       IVTYPE.EQ.19 .OR. IVTYPE.EQ.20 .OR. IVTYPE.EQ.28 .OR.        10.10
      &       IVTYPE.EQ.32 .OR. IVTYPE.EQ.33 .OR. IVTYPE.EQ.42 .OR.
-     &       IVTYPE.EQ.47 .OR. IVTYPE.EQ.59                        )      40.64 40.41 40.00
+     &       IVTYPE.EQ.47 .OR. IVTYPE.EQ.59 .OR. IVTYPE.EQ.71      )      41.15 40.64 40.41 40.00
      &   BKC = 2
 !
          IF (IVTYPE.EQ.11 .AND. ICUR.GT.0) BKC = 2                        20.36
@@ -783,7 +783,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1052,7 +1052,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1375,7 +1375,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -2492,7 +2492,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -2645,7 +2645,7 @@
         ENDIF                                                             30.21
         OUTSID = .FALSE.
         FOUTP(IP) = 0.
-        JX1 = INT(XC(IP)+3.) - 2
+        JX1 = INT(XC(IP)+3.001) - 2
         JX2 = JX1 + 1
         SX2 = XC(IP) + 1. - FLOAT(JX1)
         SX1 = 1. - SX2
@@ -2664,7 +2664,7 @@
           SY1 = 0.5                                                       40.86
           SY2 = 0.5                                                       40.86
         ELSE
-          JY1 = INT(YC(IP)+3.) - 2
+          JY1 = INT(YC(IP)+3.001) - 2
           JY2 = JY1 + 1
           SY2 = YC(IP) + 1. - FLOAT(JY1)
           SY1 = 1. - SY2
@@ -2756,7 +2756,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -2886,7 +2886,7 @@
 !
 ! 13. Source text
 !
-      PARAMETER  (NVOTP=21)                                               40.64 40.51 40.41 40.00
+      PARAMETER  (NVOTP=22)                                               41.15 40.64 40.51 40.41 40.00
       REAL       XC(MIP)        ,YC(MIP)       ,AC2(MDC,MSC,MCGRD),
      &           VOQ(MIP,*)     ,
      &           WK(*)          ,
@@ -2902,7 +2902,7 @@
       SAVE IENT, IVOTP
       DATA IENT /0/
       DATA IVOTP /10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 28, 32, 33,     20.61
-     &            42, 43, 44, 47, 48, 53, 58, 59/                         40.64 40.51 40.41 40.00
+     &            42, 43, 44, 47, 48, 53, 58, 59, 71/                     41.15 40.64 40.51 40.41 40.00
       CALL STRACE (IENT, 'SWOEXA')
 !
 !     loop over all output points
@@ -3264,7 +3264,7 @@
                 END IF
               END IF
            END DO
-           IF (ISIGM.GT.1) THEN
+           IF (ISIGM.GT.1 .AND. ISIGM.LT.MSC) THEN                        41.20
              SIG1 = SPCSIG(ISIGM-1)
              SIG2 = SPCSIG(ISIGM+1)
              SIG3 = SPCSIG(ISIGM  )
@@ -4220,6 +4220,29 @@
            ENDIF
         ENDIF
 !
+!       peak wave length                                                  41.15
+!
+        IVTYPE = 71
+        IF (OQPROC(IVTYPE)) THEN
+           EMAX = 0.
+           ISIGM = -1
+           DO IS = 1, MSC
+              ETD = 0.
+              DO ID = 1, MDC
+                ETD = ETD + WK(IS)*ACLOC(ID,IS)*DDIR
+              ENDDO
+              IF (ETD.GT.EMAX) THEN
+                EMAX  = ETD
+                ISIGM = IS
+              ENDIF
+           ENDDO
+           IF (ISIGM.GT.0) THEN
+             VOQ(IP,VOQR(IVTYPE)) = 2.*PI/WK(ISIGM)
+           ELSE
+             VOQ(IP,VOQR(IVTYPE)) = OVEXCV(IVTYPE)
+           ENDIF
+        ENDIF
+!
         GOTO 800
 !
 !       points on land: assign exception value
@@ -4261,7 +4284,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4481,7 +4504,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as

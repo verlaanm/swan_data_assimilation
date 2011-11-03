@@ -53,7 +53,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -537,7 +537,9 @@
      &                   FPM        ,UFRIC      ,
      &                   WX2        ,WY2        ,
      &                   ANYWND     ,SPCDIR     ,                         40.00
-     &                   UX2        ,UY2        ,SPCSIG     )             30.70
+!NADC     &                   UX2        ,UY2        ,SPCSIG     )             30.70
+!ADC     &                   UX2        ,UY2        ,SPCSIG     ,             41.20 30.70
+!ADC     &                   NodeNumber )                                     41.20
 !
 !****************************************************************
 !
@@ -549,6 +551,7 @@
       USE SWCOMM2                                                         40.41
       USE SWCOMM3                                                         40.41
       USE SWCOMM4                                                         40.41
+!ADC      USE WIND, ONLY: WindDrag                                            41.20
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -562,7 +565,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -587,6 +590,7 @@
 !     32.06: Roeland Ris
 !     40.00: Nico Booij (Nonstationary boundary conditions)
 !     40.41: Marcel Zijlema
+!     41.20: Casey Dietrich
 !
 !  1. Updates
 !
@@ -600,6 +604,7 @@
 !     32.06, June 99: Reformulation of wind speed in terms of friction
 !                     velocity for first and second generation
 !     40.41, Oct. 04: common blocks replaced by modules, include files removed
+!     41.20, Jun. 10: use ADCIRC's new sector-based wind drag
 !
 !  2. Purpose
 !
@@ -727,6 +732,8 @@
 !
 !***********************************************************************
 !
+!ADC      INTEGER, OPTIONAL :: NodeNumber                                     41.20
+!ADC!
       INTEGER      IDWMIN ,IDWMAX                                         30.70
 !
       REAL         WIND10 ,THETAW ,                                       30.70
@@ -869,6 +876,7 @@
         IF ( WIND10 .GT. 7.5 ) THEN
           CDRAG = ( 0.8 + 0.065 * WIND10 ) * 0.001
           CDRAG = MIN ( CDCAP, CDRAG )
+!ADC          CDRAG = WindDrag(DBLE(WIND10),0.002D0,"Powell    ",NodeNumber)
         ELSE
           CDRAG = 0.0012873
         ENDIF
@@ -929,7 +937,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1162,7 +1170,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1339,7 +1347,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1578,7 +1586,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1811,7 +1819,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -2356,7 +2364,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as

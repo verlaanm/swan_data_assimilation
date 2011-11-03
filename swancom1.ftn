@@ -76,7 +76,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -1182,7 +1182,7 @@
       IF (IQUAD.EQ.51.OR.IQUAD.EQ.52.OR.IQUAD.EQ.53) THEN                 40.41
          CALL init_constants                                              40.41
          IXQUAD = IQUAD - 50                                              40.41
-         IF (INODE.EQ.MASTER) THEN                                        40.41
+         IF (IAMMASTER) THEN                                              40.95 40.41
             WRITE(SCREEN,*) 'GurboQuad initialization'                    40.41
             WRITE(SCREEN,*) 'gravity               :', GRAV               40.41
             WRITE(SCREEN,*) 'pftail                :', PWTAIL(1)          40.41
@@ -1233,7 +1233,6 @@
 !       this is done in parallel within OpenMP environment                40.31
 !
         IF (ITRIAD.GT.0
-     &      .OR. ISURF.EQ.5                                               41.03
      &                 ) THEN
            DO IP = I1GRD,I2GRD                                            40.31
             COMPDA(IP,JURSEL) = 0.
@@ -1471,13 +1470,13 @@
 !
             IF (SCREEN.NE.PRINTF) THEN
               IF (NSTATC.EQ.1) THEN                                       40.00
-                IF (INODE.EQ.MASTER) WRITE(SCREEN,313) CHTIME, IT,        40.30
+                IF (IAMMASTER) WRITE(SCREEN,313) CHTIME, IT,              40.95 40.30
      &                                                 ITER, SWPDIR       40.30
  313            FORMAT ('+time ', A18, ', step ',I6, '; iteration '
      &                  ,I4, '; sweep ',I1)                               40.23 40.00
               ELSE
                 WRITE(PRINTF,314) ITER, SWPDIR
-                IF (INODE.EQ.MASTER) THEN                                 40.30
+                IF (IAMMASTER) THEN                                       40.95 40.30
                    IF (SWPDIR.EQ.1) THEN                                  40.30
                       WRITE(SCREEN,314) ITER, SWPDIR                      40.30
                    ELSE                                                   40.30
@@ -1792,16 +1791,16 @@
 !MPI!                                                                         40.30
            FRAC = REAL(NPFL)*100./REAL(NWETP)                             40.23
            IF(NPFL.GT.0) WRITE(PRINTF,110) 'limiter',FRAC,MXNFL           40.23
-           IF (NSTATC.EQ.0 .AND. NPFL.GT.0 .AND. INODE.EQ.MASTER)         40.23
+           IF (NSTATC.EQ.0 .AND. NPFL.GT.0 .AND. IAMMASTER)               40.95 40.23
      &        WRITE(SCREEN,110) 'limiter',FRAC,MXNFL                      40.23
 !                                                                         40.23
            IF (NPFL.GT.0) WRITE(PRINTF,111) SPCSIG(MNISL)/PI2             40.23
-           IF (NSTATC.EQ.0 .AND. NPFL.GT.0 .AND. INODE.EQ.MASTER)         40.23
+           IF (NSTATC.EQ.0 .AND. NPFL.GT.0 .AND. IAMMASTER)               40.95 40.23
      &        WRITE(SCREEN,111) SPCSIG(MNISL)/PI2                         40.23
 !                                                                         40.23
            FRAC = REAL(NPFR)*100./REAL(NWETP)                             40.23
            IF(NPFR.GT.0) WRITE(PRINTF,110) 'rescaling',FRAC,MXNFR         40.23
-           IF (NSTATC.EQ.0 .AND. NPFR.GT.0 .AND. INODE.EQ.MASTER)         40.23
+           IF (NSTATC.EQ.0 .AND. NPFR.GT.0 .AND. IAMMASTER)               40.95 40.23
      &        WRITE(SCREEN,110) 'rescaling',FRAC,MXNFR                    40.23
 !                                                                         40.23
  110       FORMAT(1X,'use of ',A9,' in ',F6.2,                            40.23
@@ -1877,10 +1876,10 @@
 !
         IF (PNUMS(21).EQ.1. .AND. ITER.EQ.1) THEN                         40.41
            WRITE(PRINTF,113)                                              40.41
-           IF (NSTATC.EQ.0.AND.INODE.EQ.MASTER) WRITE(SCREEN,113)         40.41
+           IF (NSTATC.EQ.0.AND.IAMMASTER) WRITE(SCREEN,113)               40.95 40.41
         ELSE                                                              40.41
            WRITE(PRINTF,112) ACCUR,PNUMS(4)                               30.72
-           IF (NSTATC.EQ.0.AND.INODE.EQ.MASTER)                           40.30
+           IF (NSTATC.EQ.0.AND.IAMMASTER)                                 40.95 40.30
      &        WRITE(SCREEN,112) ACCUR,PNUMS(4)                            40.30 40.00
         END IF                                                            40.41
  112    FORMAT(' accuracy OK in ',F6.2,
@@ -1967,7 +1966,7 @@
 !
       IF (.NOT.CSETUP) THEN                                               30.82
           WRITE(PRINTF,124)                                               30.82
-          IF (SCREEN.NE.PRINTF.AND.NSTATC.EQ.0.AND.INODE.EQ.MASTER)       40.30 40.13
+          IF (SCREEN.NE.PRINTF.AND.NSTATC.EQ.0.AND.IAMMASTER)             40.95 40.30 40.13
      &    WRITE(SCREEN,124)                                               30.82
       END IF                                                              30.82
  124  FORMAT(1X,'no convergence in set-up calculation')                   30.82
@@ -2072,7 +2071,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -2961,7 +2960,6 @@
      &  MEMNL4              ,WWINT               ,WWAWG               ,
      &  WWSWG               ,CGO                 ,COMPDA(1,JUSTAR)    ,
      &  COMPDA(1,JZEL)      ,SPCDIR              ,ANYWND              ,
-     &  CAS                 ,                                             41.11
      &  SWMATR(1,1,JDIS0)   ,SWMATR(1,1,JDIS1)   ,
      &  SWMATR(1,1,JGEN0)   ,SWMATR(1,1,JGEN1)   ,                        40.85
      &  SWMATR(1,1,JRED0)   ,SWMATR(1,1,JRED1)   ,                        40.85
@@ -3196,7 +3194,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -3461,12 +3459,6 @@
      &          ' GAMMA ',E12.4)
          WRITE(PRINTF,7217) PSURF(4)
  7217    FORMAT('                        N      ',E12.4)
-      ELSEIF (ISURF.EQ.5) THEN                                            41.03
-         WRITE(PRINTF,7218) PSURF(1), PSURF(4)
- 7218    FORMAT(' Surf biphase (2009)  : ALPHA  ',E12.4,
-     &          ' N     ',E12.4)
-         WRITE(PRINTF,7219) PSURF(5)
- 7219    FORMAT('                        BREF   ',E12.4)
       ELSE
          WRITE (PRINTF, *) 'Surf breaking is off'
       ENDIF
@@ -3557,7 +3549,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4021,7 +4013,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4241,7 +4233,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4635,7 +4627,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -4678,7 +4670,7 @@
 !     40.08, Mar. 03: Dimensioning of RDX, RDX changed to be consistent
 !                     with other subroutines
 !     40.41, Oct. 04: common blocks replaced by modules, include files removed
-!     40.51, Feb. 05: bottom wave period added
+!     40.51, Feb. 05: near bottom wave period added
 !
 !  2. Purpose
 !
@@ -4738,8 +4730,8 @@
 !     QB      : computed in the subroutine FRABRE
 !     SIGM01  = ETOT1 / ETOT
 !     SIGM_10 = ETOT  / ACTOT
-!     UBOT    = Sqrt [ 2 UB2 ] Note: this is Urms according to Madsen (1994)
-!     TMBOT   = 2*PI AB2 / UB2
+!     UBOT    = Sqrt [ UB2 ]             NOTE: THIS IS THE ROOT MEAN SQUARE OF THE ORBITAL MOTION NEAR THE BOTTOM!!!
+!     TMBOT   = PI Sqrt [ 2 AB2 / UB2 ]
 !
 !  4. Argument variables
 !
@@ -4758,7 +4750,7 @@
 !     SWPDIR: Number of current sweep direction                           40.16
 !     UBOT  : Near bottom velocity as function of IX and IY
 !     URSELL: Ursell number as function of IX and IY
-!     TMBOT : bottom wave period                                          40.51
+!     TMBOT : near bottom wave period                                     40.51
 
       INTEGER, INTENT(IN)  :: SWPDIR                                      40.16
 
@@ -4786,7 +4778,6 @@
 !
 !     AB2                : Sum of E_DSHKD2_DS_DD
 !     ACTOT_DSIG         : Integration term for calculating ACTOT
-!     BIPH               : parameterized biphase of the spectrum
 !     EDRKTOT_SWELL      : Swell-part of EDRKTOT
 !     EMAX               : Maximum energy according calculated HM
 !     ETOT_DRK_DSIG      : Integration term for calculating EDRKTOT
@@ -4804,7 +4795,6 @@
 !
       REAL              :: AB2, EMAX, UB2
       REAL              :: WH
-      REAL              :: BIPH
       REAL              :: FRINTF_X_DDIR
       REAL              :: BRCOEF   ! variable breaking coefficient (calc. in BRKPAR)  40.22
 !
@@ -4872,7 +4862,6 @@
       ETOT = ETOT + ETOT_DSIG(MSC) * PWTAIL(6) / FRINTF
 !
       IF (ISURF .EQ. 1 .OR. ISURF.EQ.4                                    41.03
-     &    .OR. ISURF.EQ.5                                                 41.03
      &                                ) THEN
         HM   = PSURF(2) * DEP2(KCGRD(1))                                  40.22
       ELSEIF (ISURF .EQ. 2 .OR. ISURF.EQ.3) THEN                          41.03
@@ -4968,12 +4957,12 @@
         ENDIF
 !
 !     Calculate the orbital velocity UBOT, orbital excursion ABRBOT and
-!     bottom wave period TMBOT                                            40.51
+!     near bottom wave period TMBOT                                       40.51
 !
-        IF ( UB2 .GT. 0.) UBOT(KCGRD(1)) = SQRT ( 2. * UB2 )
+        IF ( UB2 .GT. 0.) UBOT(KCGRD(1)) = SQRT ( UB2 )
         IF ( AB2 .GT. 0.) ABRBOT = SQRT (2. *  AB2)
         IF ( UB2.GT.0. .AND. AB2.GT.0. )                                  40.51
-     &                               TMBOT(KCGRD(1)) = PI2*SQRT(AB2/UB2)  40.51
+     &                             TMBOT(KCGRD(1)) = PI*SQRT(2.*AB2/UB2)  40.51
 !
       ENDIF
 !
@@ -4981,7 +4970,6 @@
 !     *** update only for first encounter in a sweep                      40.16
 !
       IF ( ITRIAD.GT.0                                                    40.41
-     &     .OR. ISURF.EQ.5                                                41.03
      &                 ) THEN                                             40.41
          IF (( SWPDIR .EQ. 1) .OR.                                        40.16
      &       ( SWPDIR .EQ. 2 .AND. IXCGRD(1) .EQ. 1) .OR.                 40.16
@@ -4994,17 +4982,6 @@
       ELSE                                                                40.41
         URSELL(KCGRD(1)) = 0.                                             40.41
       END IF                                                              40.41
-!
-!     --- calculate Qb when biphase scaling is activated                  41.03
-!
-      IF (ISURF.EQ.5) THEN
-         BIPH = 0.5*PI*(TANH(PTRIAD(4)/URSELL(KCGRD(1)))-1.)
-         IF ( BIPH.LT.0. ) THEN
-            WH = (BIPH/PSURF(5))**PSURF(4)
-            WH = MIN(1.,WH)
-            QB(KCGRD(1)) = WH
-         ENDIF
-      ENDIF
 !
       QB_LOC = QB(KCGRD(1))
 !
@@ -5058,7 +5035,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -5278,7 +5255,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -5524,7 +5501,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -5849,7 +5826,6 @@
      &                     MEMNL4     ,WWINT      ,WWAWG      ,
      &                     WWSWG      ,CGO        ,USTAR      ,
      &                     ZELEN      ,SPCDIR     ,ANYWND     ,
-     &                     CAS        ,                                   41.11
      &                     DISSC0     ,DISSC1     ,GENC0      ,           40.85
      &                     GENC1      ,REDC0      ,REDC1      ,           40.85
      &                     XIS        ,FRCOEF     ,IT         ,           30.00
@@ -5883,7 +5859,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -6199,7 +6175,6 @@
       REAL  :: WWAWG(*)
       REAL  :: WWSWG(*)
       REAL  :: CGO(MSC,MICMAX)                                            40.22
-      REAL  :: CAS(MDC,MSC,MICMAX)                                        41.11
       REAL  :: USTAR(MCGRD)
       REAL  :: ZELEN(MCGRD)
       REAL  :: DISSC0(1:MDC,1:MSC,1:MDISP)                                40.67
@@ -6349,7 +6324,6 @@
      &                            IDCMIN  ,IDCMAX  ,ISSTOP  ,             40.02
      &                            ETOT    ,IMATDA  ,IMATRA  ,PLWCAP  ,    40.02
      &                            CGO     ,UFRIC   ,                      40.53
-     &                            CAS     ,                               41.11
      &                            DEP2    ,DISSC1  ,DISSC0  )             40.67 40.61 40.12
 !TIMG      CALL SWTSTO(133)                                                    40.23
 !
@@ -6606,7 +6580,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -6757,7 +6731,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -6901,7 +6875,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -7090,7 +7064,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -7602,7 +7576,7 @@
          INOCNV = INOCNV + 1
       END IF
       IF ( ICONV.EQ.0 .AND. IAMOUT.GE.1 ) THEN
-         IF (ERRPTS.GT.0.AND.INODE.EQ.MASTER) THEN
+         IF (ERRPTS.GT.0.AND.IAMMASTER) THEN
             WRITE(ERRPTS,100) IXCGRD(1)+MXF-1, IYCGRD(1)+MYF-1, 2
          END IF
  100     FORMAT (I4,1X,I4,1X,I2)
@@ -7701,7 +7675,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -8114,7 +8088,7 @@
          INOCNV = INOCNV + 1
       END IF
       IF ( ICONV.EQ.0 .AND. IAMOUT.GE.1 ) THEN
-         IF (ERRPTS.GT.0.AND.INODE.EQ.MASTER) THEN
+         IF (ERRPTS.GT.0.AND.IAMMASTER) THEN
             WRITE(ERRPTS,100) IXCGRD(1)+MXF-1, IYCGRD(1)+MYF-1, 2
          END IF
  100     FORMAT (I4,1X,I4,1X,I2)
@@ -8210,7 +8184,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -8328,7 +8302,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -8688,7 +8662,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as
@@ -9243,7 +9217,7 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2010  Delft University of Technology
+!     Copyright (C) 1993-2011  Delft University of Technology
 !
 !     This program is free software; you can redistribute it and/or
 !     modify it under the terms of the GNU General Public License as

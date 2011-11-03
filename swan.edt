@@ -62,8 +62,8 @@
 !
 !   BOUNdnest1  NEST 'fname'  CLOSed|OPEN
 !
-!   BOUNdnest2  WAMNest 'fname' / UNFormatted  CRAY|WKstat  \
-!                               \ FREE                      /   [xgc] [ygc]
+!   BOUNdnest2  WAMNest 'fname' / UNFormatted CRAY|WKstat \
+!                               \ FREE                    / [xgc] [ygc] [lwdate]
 !
 !   BOUNdnest3  WWIII 'fname'  CLOSed|OPEN  [xgc] [ygc]
 !
@@ -207,7 +207,7 @@
 !             FRCOEF|WIND|DISSIP|QB|TRANSP|FORCE|UBOT|URMS|WLEN|STEEPNESS|  &
 !             DHSIGN|DRTM01|LEAK|TSEC|XP|YP|DIST|SETUP|TMM10|RTMM10|DEPTH|  &
 !             TMBOT|QP|BFI|NPLANT|WATLEV|BOTLEV|TPS|DISBOT|DISSURF|DISWCAP| &
-!             GENE|GENW|REDI|REDQ|REDT|PROPA|PROPX|PROPT|PROPS|RADS >       &
+!             GENE|GENW|REDI|REDQ|REDT|PROPA|PROPX|PROPT|PROPS|RADS|LWAVP > &
 !             ([unit]) (OUTPUT [tbegblk] [deltblk] SEC|MIN|HR|DAY)
 !
 !   TABLE   'sname'  HEADER | NOHEADER | INDEXED 'fname'                    &
@@ -215,7 +215,7 @@
 !             FRCOEF|WIND|DISSIP|QB|TRANSP|FORCE|UBOT|URMS|WLEN|STEEPNESS|  &
 !             DHSIGN|DRTM01|LEAK|TIME|TSEC|XP|YP|DIST|SETUP|TMM10|RTMM10|   &
 !             DEPTH|TMBOT|QP|BFI|WATLEV|BOTLEV|TPS|DISBOT|DISSURF|DISWCAP|  &
-!             GENE|GENW|REDI|REDQ|REDT|PROPA|PROPX|PROPT|PROPS|RADS >       &
+!             GENE|GENW|REDI|REDQ|REDT|PROPA|PROPX|PROPT|PROPS|RADS|LWAVP > &
 !             ([unit]) (OUTPUT [tbegtbl] [delttbl] SEC|MIN|HR|DAY)
 !
 !   SPECout 'sname'  SPEC1D|SPEC2D  ABS|REL   'fname'                       &

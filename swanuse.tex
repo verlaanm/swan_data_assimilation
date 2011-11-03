@@ -32,7 +32,7 @@
 \end{center}
 \vfill
 \begin{center}
-{\Large\bf SWAN Cycle III version 40.81}
+{\Large\bf SWAN Cycle III version 40.85}
 \end{center}
 
 \cleardoublepage
@@ -61,7 +61,7 @@ home page    &:& \hl{http://www.swan.tudelft.nl}
 \vfill
 
 \noindent
-Copyright (c) 1993-2010 Delft University of Technology.
+Copyright (c) 1993-2011 Delft University of Technology.
 \\[2ex]
 \noindent
 Permission is granted to copy, distribute and/or modify this document
@@ -86,7 +86,7 @@ Texts. A copy of the license is available at
 
 \tableofcontents
 
-\chap{Introduction} \label{ch:intro}
+\chap{About this manual} \label{ch:intro}
 \pagenumbering{arabic}
 
 The information about the SWAN package is distributed over four different documents. This User Manual describes
@@ -98,9 +98,9 @@ techniques in SWAN code is also discussed.
 \nocite{Impman,Progrul,Techdoc}
 \\[2ex]
 \noindent
-In Chapter~\ref{ch:defin} some general definitions and remarks concerning the usage of SWAN, the treatment of grids,
-boundary conditions, etc. is given. It is advised to read these definitions and remarks before consulting the rest
-of the manual. Chapter~\ref{ch:inout} gives some remarks concerning the input and output files of SWAN.
+In Chapter~\ref{ch:defin} general description of the model and some instructions concerning the usage of SWAN,
+the treatment of grids, boundary conditions, etc. is given. It is advised to read this chapter before consulting
+the rest of the manual. Chapter~\ref{ch:inout} gives some remarks concerning the input and output files of SWAN.
 Chapter~\ref{ch:comm} describes the complete set of commands of the program SWAN.
 \\[2ex]
 \noindent
@@ -113,7 +113,7 @@ Appendix~\ref{app:syntax} outlines the syntax of the command file (or input file
 in SWAN can be found in Appendix~\ref{app:swanedt}. Appendix~\ref{app:spcform} described the format of the files for
 spectral input and output by SWAN.
 
-\chap{General definitions and remarks} \label{ch:defin}
+\chap{General description and instructions for use} \label{ch:defin}
 
 \section{Introduction}
 The purpose of this chapter is to give some general advice in choosing the basic input for SWAN
@@ -277,8 +277,7 @@ Examples are:
                        shift) SWAN may also not converge.
            \item[ad 3] For the wave-induced set-up SWAN may also not converge.
          \end{itemize}
-         Information on the actual convergence of a particular SWAN run is provided in the
-         {\tt PRINT} file (see SWAN Implementation Manual).
+         Information on the actual convergence of a particular SWAN run is provided in the {\tt PRINT} file.
 \end{itemize}
 Some other problems which the SWAN user may encounter are due to more {\bf fundamental shortcomings}
 of SWAN (which may or may not be typical for third-generation wave models) and unintentional {\bf coding
@@ -444,6 +443,8 @@ reduced by taking the grids and windows as much as equal to one another as possi
 It is recommended to choose output times such that they coincide with computational time levels.
 
 \subsection{Input grid(s) and time window(s)}
+\label{sec:inpgrid}
+
 The bathymetry, current, water level, bottom friction and wind (if spatially variable) need to be provided to
 SWAN on so-called input grids. It is best to make an input grid so large that it completely covers the
 computational grid.
@@ -543,7 +544,7 @@ significant wave height (command {\tt BOUND}...). The actual value of this diffe
 user (see the {\tt SET} command). Note that this warning will not apply in the case of unstructured grids.
 \\[2ex]
 \noindent
-If the computational grid extends outside the input grid, the reader is referred to Section~\ref{sec:choigrd}
+If the computational grid extends outside the input grid, the reader is referred to Section~\ref{sec:inpgrid}
 to find the assumptions of SWAN on depth, current, water level, wind, bottom friction in the non-overlapping area.
 \\[2ex]
 \noindent
@@ -850,7 +851,7 @@ batch file that is used by the user. Consult the Implementation Manual for more 
 \\[2ex]
 \noindent
 The print file contains an echo of the command file and error messages. These messages are usually
-self-explanatory (if not, users may address the SWAN forum-page on the SWAN homepage). The print
+self-explanatory. The print
 file also contains computational results if the user so requests (with command {\tt BLOCK} or {\tt TABLE}).
 
 \chap{Description of commands} \label{ch:comm}
@@ -1279,12 +1280,12 @@ xxxxxxxxxxxx\= \kill
 {\tt [xexc]}      \> the value which the user uses to indicate that a grid point is to be ignored\+\\
                      in the computations (this value is provided by the user at the location of the\\
                      $x-$coordinate considered in the file of the $x-$coordinates, see command\\
-                     {\tt READGRID COOR}). Required if this option {\tt EXCEPTION} is used.\\
+                     {\tt READGRID COOR}). Required if the option {\tt EXCEPTION} is used.\\
                      Default: {\tt [xexc]} = 0.0.\-\\
 {\tt [yexc]}      \> the value which the user uses to indicate that a grid point is to be ignored\+\\
                      in the computations (this value is provided by the user at the location of the\\
                      $y-$coordinate considered in the file of the $y-$coordinates, see command\\
-                     {\tt READGRID COOR}). Required if this option {\tt EXCEPTION} is used.\\
+                     {\tt READGRID COOR}). Required if the option {\tt EXCEPTION} is used.\\
                      Default: {\tt [yexc]} = {\tt [xexc]}.\-\\
 {\tt CIRCLE}      \> this option indicates that the spectral directions cover the full circle.\+\\
                      This option is default.\-\\
@@ -1512,8 +1513,6 @@ The file {\tt fort.14} contains the bottom levels and will be read by SWAN throu
 If land points remain dry during the computation (no flooding!), then these points can be ignored.
 In this way, turn-around time and internal memory can be saved. This can be done by indicating bottom level in these points as
 exception value. See command {\tt INPGRID BOTTOM EXCEPTION}.
-\\[2ex]
-\noindent
 For parallel runs using MPI, an exception value for bottom levels should be prescribed in order
 to have a good load-balancing!
 \\[2ex]
@@ -1688,7 +1687,7 @@ xxxxxxxxxxxx\= \kill
                        the $x-$ and $y-$component ($\xi-$ and $\eta-$component) are to be read from one and\\
                        the same file (with one {\tt READINP} command). With this option SWAN reads first all\\
                        $x-$components ($\xi-$components), and then all $y-$components ($\eta-$components)\\
-                       (see below). The firs component ($x-$ or $\xi-$component) is always eastward oriented\\
+                       (see below). The first component ($x-$ or $\xi-$component) is always eastward oriented\\
                        and the second one ($y-$ or $\eta-$component) is always northwise oriented. The\\
                        components  $\xi$ and $\eta$ are taken along the directions of the grid lines\\
                        of the curvi-linear grid! If the current velocity is relatively large, i.e.\\
@@ -1805,15 +1804,15 @@ xxxxxxxxxxxx\= \kill
                        of two ways, by giving the format number {\tt [idfm]} or the format string {\tt 'form'}.\-\\
 {\tt 'form'}        \> a user$-$specified format string according to Fortran convention, e.g.\+\\
                        {\tt '(10X,12F5.0)'}.\-\\
-{\tt [idfm]}        \> this format number is interpreted as follows:
+{\tt [idfm]}        \> this format number is interpreted as follows:\+\\
                        \pushtabs
                        xxxx\=xxxxxxxxxxxxx \kill
-                       =1: \> Format according to BODKAR convention (a standard of the Ministry of\+\\
-                              Transport and Public Works in the Netherlands).\\
+                       =1: \> Format according to BODKAR convention (a standard of the Ministry\+\\
+                              of Transport and Public Works in the Netherlands).\\
                               Format string: {\tt (10X,12F5.0)}.\-\\
                        =5: \> Format {\tt (16F5.0)}, i.e. an input line consists of 16 fields of 5 places each.\\
                        =6: \> Format {\tt (12F6.0)}, i.e. an input line consists of 12 fields of 6 places each.\\
-                       =8: \> Format {\tt (10F8.0)}, i.e. an input line consists of 10 fields of 8 places each.\\
+                       =8: \> Format {\tt (10F8.0)}, i.e. an input line consists of 10 fields of 8 places each.\-\\
                        \poptabs
 {\tt UNFORMATTED}   \> is a form of reading without conversion (binary files). Not recommended for\+\\
                        ordinary use.\-\\
@@ -1882,8 +1881,8 @@ xxxxxxxxxxxx\= \kill
 {\tt PEAK}     \> Default: the peak period (for definition, see Appendix~\ref{app:defvar}) is used as characteristic\+\\
                   wave period. This is default.\-\\
 {\tt MEAN}     \> $T_{m01}$ (for definition, see Appendix~\ref{app:defvar}) is used as the characteristic wave period.\\
-{\tt DSPR}     \> option for expressing the width of the directional distribution (the distribution\+\\
-                  function itself is $\cos^m(\theta-\theta_{\rm peak}$).\-\\
+{\tt DSPR}     \> option for expressing the width of the directional distribution; the distribution\+\\
+                  function itself is $\cos^m(\theta-\theta_{\rm peak})$.\-\\
 {\tt POWER}    \> the directional width is expressed with the power $m$ itself, this option is default\+\\
                   (note that the directional resolution should accommodate the directional width,\\
                   see command {\tt CGRID}).\-\\
@@ -2055,11 +2054,11 @@ xxxxxxxxxxxx\= \kill
                         \pushtabs
                            xxxxxxxxxxxxxxx\=xxxxxxxx\=xxxxxxxx\=xxxxxxxx\=xxxxxxxx \kill
                            TPAR\\
-                           19920516.1300   \>     4.2  \>     12.  \>    -110.  \>    22.\\
-                           19920516.1800   \>     4.2  \>     12.  \>    -110.  \>    22.\\
-                           19920517.0000   \>     1.2  \>     8.   \>    -110.  \>    22.\\
-                           19920517.1200   \>     1.4  \>     8.5  \>     -80.  \>    26 \\
-                           19920517.2000   \>     0.9  \>     6.5  \>     -95.  \>    28 \\
+                           19920516.130000 \>     4.2  \>     12.  \>    -110.  \>    22.\\
+                           19920516.180000 \>     4.2  \>     12.  \>    -110.  \>    22.\\
+                           19920517.000000 \>     1.2  \>     8.   \>    -110.  \>    22.\\
+                           19920517.120000 \>     1.4  \>     8.5  \>     -80.  \>    26 \\
+                           19920517.200000 \>     0.9  \>     6.5  \>     -95.  \>    28 \\
                                            \>          \>          \>           \>       \\
                         \poptabs
                         The structure of the files containing 1D or 2D spectra is described in\\
@@ -2137,7 +2136,7 @@ xxxxxxxxxxxx\= \kill
                              | UNFormatted <          > |
                              |              | WKstat |  |
                              |                          |
-BOUNdnest2  WAMNest 'fname' <                            > [xgc] [ygc]
+BOUNdnest2  WAMNest 'fname' <                            > [xgc] [ygc] [lwdate]
                              |                          |
                              | FREE                     |
 \end{verbatim}
@@ -2182,9 +2181,6 @@ do not transfer properly), the option {\tt FREE} is available in this command. T
 does not support the required free format nesting output; WAM users who modify WAM such that it can
 make formatted output, must modify WAM such that the files made by WAM can be read in free format, i.e.
 with at least a blank or comma between numbers.
-\\[2ex]
-\noindent
-Note that the format of time and date that can be accepted by SWAN is {\tt YYMMDDHHMMSS} (i.e. include seconds).
 \begin{tabbing}
 xxxxxxxxxxxx\= \kill
 {\tt {'fname'}}   \> a file name that contains all the names of WAM files containing the nested\+\\
@@ -2215,6 +2211,9 @@ xxxxxxxxxxxx\= \kill
                      required.\\
                      If SWAN is used with \underline{spherical coordinates} then {\tt [ygc]} is ignored by SWAN.\\
                      Default: the location of the first spectrum encountered in the nest file.\-\\
+{\tt [lwdate]}    \> length of character string for date-time as used in the WAM files. Possible values\+\\
+                     are: 10 (i.e. {\tt YYMMDDHHMM}), 12 (i.e. {\tt YYMMDDHHMMSS}) or 14 (i.e. {\tt YYYYMMDDHHMMSS}).\\
+                     Default: {\tt [lwdate]} = 12\-\\
 \end{tabbing}
 
 \idxcmd{BOUNDNEST3}
@@ -2487,14 +2486,6 @@ xxxxxxxxxxxx\= \kill
 BREaking  CONstant [alpha] [gamma]
 \end{verbatim}
 \linecmd
-%\idxcmd{BREAKING}
-%\linecmd
-%\begin{verbatim}
-%           | -> CONstant [alpha] [gamma]               |
-%BREaking  <                                             > ( FREQDep [power] )
-%           |    WESTHuys [alpha] [pown] [bref] [shfac] |
-%\end{verbatim}
-%\linecmd
 
 \noindent
 With this command the user can influence depth-induced wave breaking in shallow water in the SWAN model.
@@ -2511,18 +2502,6 @@ xxxxxxxxxxxx\= \kill
                   Default: {\tt [alpha]} = 1.0.\-\\
 {\tt [gamma]}  \> the ratio of maximum individual wave height over depth.\+\\
                   Default: {\tt [gamma]} = 0.73.\-\\
-%{\tt WESTHUY}  \> indicates that the biphase scaling of Van der Westhuysen is to be used.\\
-%{\tt [alpha]}  \> proportionality coefficient.\+\\
-%                  Default: {\tt [alpha]} = 0.98.\-\\
-%{\tt [pown]}   \> exponent in the fraction of breaking waves.\+\\
-%                  Default: {\tt [pown]} = 2.5.\-\\
-%{\tt [bref]}   \> the biphase at which all waves are considered to be broken.\+\\
-%                  Default: {\tt [bref]} = -1.3963.\-\\
-%{\tt [shfac]}  \> the shape factor.\+\\
-%                  Default: {\tt [shfac]} = 500.\-\\
-%{\tt FREQDEP}  \> indicates that frequency dependent breaking is to be used.\\
-%{\tt [power]}  \> power of the frequency dependence. Valid values are 0, 1 and 2.\+\\
-%                  Default: {\tt [power]} = 2.\-\\
 \end{tabbing}
 
 \idxcmd{FRICTION}
@@ -3096,7 +3075,7 @@ There are two categories of output commands:
       Commands {\tt FRAME}, {\tt GROUP}, {\tt RAY}, {\tt ISOLINE} and {\tt NGRID} \underline{cannot} be used in 1D-MODE
       and command {\tt GROUP} \underline{cannot} be used in case of unstructured meshes. If one
       gives one name for two sets of output locations, the first set is lost (first in the sequence in the
-      command file). Two special names: {\tt BOTTGRID} and {\tt COMPGRID} are reserved for use by SWAN
+      command file). Two special names {\tt BOTTGRID} and {\tt COMPGRID} are reserved for use by SWAN
       (see below). The user may not define sets with these names.
 
 \item \underline{Write / plot}\\
@@ -3213,8 +3192,18 @@ CURve 'sname' [xp1] [yp1]  < [int] [xp] [yp] >
 \noindent
 With this optional command the user defines output along a curved line. Actually this curve is a broken
 line, defined by the user with its corner points. The values of the output quantities along the curve are
-interpolated from the computational grid. This command may be used more than once to define more
-curves.
+interpolated from the computational grid. This command may be used more than once to define more curves.
+\\[2ex]
+In some cases output is required on (part of) the boundary. To make this easier the following output curves are pre-defined
+(i.e. they do not have to be defined by the user): the curve {\tt BOUNDARY} which corresponds to the whole outer boundary, and the
+curves {\tt BOUND\_01}, {\tt BOUND\_02}, etc. corresponding to parts of the boundary. In regular and curvilinear grids these parts
+are the four sides of the computational grid; in unstructured grids they are defined in the grid definition file. Examples:
+\begin{itemize}
+  \item {\tt TABLE 'BOUNDARY' HEAD 'boundary.tab' XP YP}
+  \item {\tt TABLE 'BOUND\_02' HEAD 'bnd2.tab' XP YP}
+\end{itemize}
+The result is a file where the coordinates of the whole boundary and boundary part 2 are printed.
+This information can be useful when preparing a BOUNDSPEC command for any type of computational grid.
 
 \begin{tabbing}
  xxxxxxxxxxxx\= \kill
@@ -3225,7 +3214,7 @@ curves.
 {\tt [int]}       \> SWAN will generate output at {\tt [int]}$-$1 equidistant locations between two\+\\
                      subsequent corner points of the curve (including the two corner points of the curve)\-\\
 {\tt [xp],[yp]}   \> problem coordinates of a corner point of the curve. Repeat the group\+\\
-                     {\tt [int] [xp] [yp]} in proper order if there are more corner points are on the curve.\-\\
+                     {\tt [int] [xp] [yp]} in proper order if there are more corner points on the curve.\-\\
 \end{tabbing}
 
 \idxcmd{RAY}
@@ -3312,6 +3301,7 @@ of these points are given in the command itself or read from a file (option {\tt
 {\tt [xp],[yp]} \> \underline{problem coordinates} of one output location\+\\
                    if Cartesian coordinates are used in m\\
                    if spherical coordinates are used in degrees (see command {\tt COORD})\-\\
+{\tt {'fname'}} \> name of the file containing the output locations.\\
 \end{tabbing}
 
 \idxcmd{NGRID}
@@ -3426,7 +3416,7 @@ QUANTity <             > 'short' 'long' [lexp] [hexp]  [excv]                   
 \linecmd
 
 \noindent
-With this command the user can influence:
+With this command the user can influence
 \begin{itemize}
    \item the naming of output quantities,
    \item the accuracy of writing output quantities,
@@ -3440,16 +3430,16 @@ With this command the user can influence:
 {\tt <} \, \, \, \, {\tt >} \> the output parameters are the same as given in command {\tt BLOCK}.\\
 \, {\tt  |...|}    \> \\
 {\tt `short'}      \> user preferred short name of the output quantity (e.g. the name appearing in\+\\
-                      the heading of a table written by SWAN). If this option is not used, SWAN will\\
-                      use a realistic name.\-\\
+                      the heading of a table written by SWAN). If this option is not used, SWAN\\
+                      will use a realistic name.\-\\
 {\tt `long'}       \> long name of the output quantity (e.g. the name appearing in the heading of a\+\\
                       block output written by SWAN). If this option is not used, SWAN will use a\\
                       realistic name.\-\\
 {\tt [lexp]}       \> lowest expected value of the output quantity.\\
 {\tt [hexp]}       \> highest expected value of the output quantity; the highest expected value is\+\\
-                      used by SWAN to determine the number of decimals in a table with heading. So\\
-                      the {\tt QUANTITY} command can be used in case the default number of decimals in\\
-                      a table is unsatisfactory.\-\\
+                      used by SWAN to determine the number of decimals in a table with heading.\\
+                      So the {\tt QUANTITY} command can be used in case the default number of decimals\\
+                      in a table is unsatisfactory.\-\\
 {\tt [excv]}       \> in case there is no valid value (e.g. wave height in a dry point) this\+\\
                       exception value of the output quantity is written in a table or block output.\-\\
 \end{tabbing}
@@ -3473,21 +3463,27 @@ The following data are accepted only in combination with some specific output qu
 {\tt [fmax]}       \> upper limit of frequency range used for computing integral parameters.\+\\
                       Default: {\tt [fmax]} = 1000.0 Hz (acts as infinity).\-\\
 {\tt PROBLEMCOORD} \> $-$ vector components are relative to the $x-$ and $y-$axes of the \underline{problem}\+\\
-                      coordinate system (see command {\tt COORD})\\
-                      $-$ directions are counterclockwise relative to the positive $x-$axis of the\\
-                      \underline{problem} coordinate system if Cartesian direction convention is used (see\\
-                      command {\tt SET})\\
-                      $-$ directions  are relative to \underline{North} (clockwise) if Nautical direction\\
-                      convention is used (see command {\tt SET})\-\\
+                      coordinate system:\\
+                      \pushtabs
+                      xxxx\=xxx \kill
+                      {$\bullet$} \> directions are counterclockwise relative to the positive $x-$axis of the\+\\
+                                     \underline{problem} coordinate system if Cartesian direction convention is used (see\\
+                                     command {\tt SET})\-\\
+                      {$\bullet$} \> directions  are relative to \underline{North} (clockwise) if Nautical direction\+\\
+                                     convention is used (see command {\tt SET})\-\-\\
+                      \poptabs
 {\tt FRAME}        \> If output is requested on sets created by command {\tt FRAME} or automatically\+\\
-                      ({\tt COMPGRID} or {\tt BOTTGRID})\\
-                      $-$ vector components are relative to the $x-$ and $y-$axes of the \underline{frame}\\
-                      coordinate system (see command {\tt COORD})\\
-                      $-$ directions are counterclockwise relative to the positive $x-$axis of the\\
-                      \underline{frame} coordinate system if Cartesian direction convention is used (see\\
-                      command {\tt SET})\\
-                      $-$ directions  are relative to \underline{North} (clockwise) if Nautical direction\\
-                      convention is used (see command {\tt SET})\-\\
+                      ({\tt COMPGRID} or {\tt BOTTGRID}):\\
+                      \pushtabs
+                      xxxx\=xxx \kill
+                      {$\bullet$} \> vector components are relative to the $x-$ and $y-$axes of the \underline{frame}\+\\
+                                     coordinate system\-\\
+                      {$\bullet$} \> directions are counterclockwise relative to the positive $x-$axis of the\+\\
+                                     \underline{frame} coordinate system if Cartesian direction convention is used (see\\
+                                      command {\tt SET})\-\\
+                      {$\bullet$} \> directions  are relative to \underline{North} (clockwise) if Nautical direction\+\\
+                                     convention is used (see command {\tt SET})\-\-\\
+                      \poptabs
 \end{tabbing}
 
 \noindent
@@ -3625,6 +3621,8 @@ BLOck  'sname'  <               > 'fname' (LAYout [idla])
            | TMBOT     |
            |           |
            | WLENgth   |
+           |           |
+           | LWAVP     |
            |           |
            | STEEpness |
            |           |
@@ -3795,7 +3793,8 @@ the energy balance equation:
                 then one should use the command {\tt FRICTION} with the value of the friction\\
                 set to zero ({\tt FRICTION COLLINS 0}).\-\\
 {\tt TMBOT}  \> the bottom wave period (in s).\\
-{\tt WLEN}   \> average wavelength (in m).\\
+{\tt WLEN}   \> average wave length (in m).\\
+{\tt LWAVP}  \> peak wave length (in m).\\
 {\tt STEEPNESS} \> average wave steepness (dimensionless).\\
 {\tt BFI}    \> Benjamin-Feir index (dimensionless).\\
 {\tt NPLANTS} \> number of plants per square meter.\\
@@ -3921,7 +3920,7 @@ The keywords {\tt HEADER} and {\tt NOHEADER} determine the appearance of the tab
 \end{tabbing}
 
 \noindent
-Otherwise see command {\tt BLOCK} except that the $x-$ and $y-$components of the vectorial quantities {\tt VEL},
+Unless specifying (see command {\tt BLOCK}), the $x-$ and $y-$components of the vectorial quantities {\tt VEL},
 {\tt FORCE} and {\tt TRANSPORT} are always given with respect to the \underline{problem coordinate} system.
 \\[2ex]
 The number of decimals in the table varies for the output parameters; it depends on the value of {\tt [hexp]}, given
@@ -4429,12 +4428,19 @@ $S_{xy} = S_{yx} = \rho g \int n \sin\theta \cos\theta E d\sigma d\theta$ \\
 $S_{yy} = \rho g \int \lfloor n \sin^2\theta + n - \frac{1}{2} \rfloor E d\sigma d\theta$ \\
                         \\
                         and $n$ is the group velocity over the phase velocity.\-\\
-URMS                 \> Root-mean-square value (in m/s) of the orbital motion near the bottom\+\\
-                        $U_{\rm rms} = \sqrt{<U^2>}$.\-\\
+URMS                 \> Root-mean-square value (in m/s) of the orbital motion near the bottom.\+\\
+                        \\
+$U_{\rm rms} = \sqrt{\int_{0}^{2\pi} \int_{0}^{\infty} \frac{\sigma^2}{\sinh^2 kd} E(\sigma,\theta) d\sigma d\theta}$
+                        \\
+                        \-\\
 UBOT                 \> Root-mean-square value (in m/s) of the maxima of the orbital motion\+\\
                         near the bottom $U_{\rm bot} = \sqrt{2} U_{\rm rms}$.\-\\
-TMBOT                \> Bottom wave period (in s) defined as the ratio of the bottom excursion\+\\
-                        amplitude to the bottom orbital velocity.\-\\
+TMBOT                \> Near bottom wave period (in s) defined as the ratio of the bottom excursion\+\\
+                        amplitude to the root-mean-square velocity $T_{\rm b} = \sqrt{2}\pi a_{\rm b}/U_{\rm rms}$ with\\
+                        \\
+$a_{\rm b} = \sqrt{2\int_{0}^{2\pi} \int_{0}^{\infty} \frac{1}{\sinh^2 kd} E(\sigma,\theta) d\sigma d\theta}$
+                        \\
+                        \-\\
 LEAK                 \> Numerical loss of energy equal to $c_{\theta}E(\omega,\theta)$ across boundaries $\theta_1$=[dir1]\+\\
                         and $\theta_2$=[dir2] of a directional sector (see command {\tt CGRID}).\-\\
 TIME                 \> Full date-time string.\\
@@ -4481,7 +4487,7 @@ where {\tt KEY2word} is the second keyword.
 
 In every command scheme, keywords appear as words in both lower- and upper-case letters. When typing the command or
 keyword in the command file, the user {\bf must at least} copy literally the part with upper-case letters. SWAN reads
-only this part and SWAN is case insensitive except for one instance (character strings), see below. When typing the
+only this part. SWAN is case insensitive except for one instance (character strings), see below. When typing the
 keyword in the command file, any extension of the part with upper-case letters is at the users discretion as long as
 the extension is limited to letters or digits, as well as the characters $-$ and \_. So, in the first command outlined
 above one may write: {\tt KEY} or {\tt KEYW} or {\tt KEY}$-${\tt word} or {\tt keyhole}, etc., whereas with the
@@ -4577,7 +4583,7 @@ a name can be entered in two ways:
 As a rule, an error message will result if numerical data is given where character data should be given.
 \\[2ex]
 \noindent
-Numerical data are simple numbers , e.g. 15 or $-$7 (integer data), or 13.7 or 0.8E$-$4 (real data). Whether or not integer number or
+Numerical data are simple numbers, e.g. 15 or $-$7 (integer data), or 13.7 or 0.8E$-$4 (real data). Whether or not integer number or
 real number should be given by the user is indicated in the description of the command scheme.
 \\[2ex]
 \noindent
@@ -4716,8 +4722,8 @@ Below the file {\tt swan.edt} is presented in which all the commands that can be
 !
 !   BOUNdnest1  NEST 'fname'  CLOSed|OPEN
 !
-!   BOUNdnest2  WAMNest 'fname' / UNFormatted  CRAY|WKstat  \
-!                               \ FREE                      /   [xgc] [ygc]
+!   BOUNdnest2  WAMNest 'fname' / UNFormatted CRAY|WKstat \
+!                               \ FREE                    / [xgc] [ygc] [lwdate]
 !
 !   BOUNdnest3  WWIII 'fname'  CLOSed|OPEN  [xgc] [ygc]
 !
@@ -4861,7 +4867,7 @@ Below the file {\tt swan.edt} is presented in which all the commands that can be
 !             FRCOEF|WIND|DISSIP|QB|TRANSP|FORCE|UBOT|URMS|WLEN|STEEPNESS|  &
 !             DHSIGN|DRTM01|LEAK|TSEC|XP|YP|DIST|SETUP|TMM10|RTMM10|DEPTH|  &
 !             TMBOT|QP|BFI|NPLANT|WATLEV|BOTLEV|TPS|DISBOT|DISSURF|DISWCAP| &
-!             GENE|GENW|REDI|REDQ|REDT|PROPA|PROPX|PROPT|PROPS|RADS >       &
+!             GENE|GENW|REDI|REDQ|REDT|PROPA|PROPX|PROPT|PROPS|RADS|LWAVP > &
 !             ([unit]) (OUTPUT [tbegblk] [deltblk] SEC|MIN|HR|DAY)
 !
 !   TABLE   'sname'  HEADER | NOHEADER | INDEXED 'fname'                    &
@@ -4869,7 +4875,7 @@ Below the file {\tt swan.edt} is presented in which all the commands that can be
 !             FRCOEF|WIND|DISSIP|QB|TRANSP|FORCE|UBOT|URMS|WLEN|STEEPNESS|  &
 !             DHSIGN|DRTM01|LEAK|TIME|TSEC|XP|YP|DIST|SETUP|TMM10|RTMM10|   &
 !             DEPTH|TMBOT|QP|BFI|WATLEV|BOTLEV|TPS|DISBOT|DISSURF|DISWCAP|  &
-!             GENE|GENW|REDI|REDQ|REDT|PROPA|PROPX|PROPT|PROPS|RADS >       &
+!             GENE|GENW|REDI|REDQ|REDT|PROPA|PROPX|PROPT|PROPS|RADS|LWAVP > &
 !             ([unit]) (OUTPUT [tbegtbl] [delttbl] SEC|MIN|HR|DAY)
 !
 !   SPECout 'sname'  SPEC1D|SPEC2D  ABS|REL   'fname'                       &
@@ -4918,7 +4924,7 @@ These files contain the following information:
 
 \begin{verbatim}
 SWAN   1                                Swan standard spectral file, version
-$ Data produced by SWAN version 40.81
+$ Data produced by SWAN version 40.85
 $ Project:'projname'     ;   run number:'runnum'
 TIME                                    time-dependent data
      1                                  time coding option
@@ -5024,7 +5030,7 @@ LOCATION   2
 
 \begin{verbatim}
 SWAN   1                                Swan standard spectral file, version
-$ Data produced by SWAN version 40.81
+$ Data produced by SWAN version 40.85
 $ Project:'projname'     ;   run number:'runnum'
 LOCATIONS                               locations in x-y-space
      1                                  number of locations
@@ -5204,7 +5210,7 @@ For nonstationary computations repeat from VVV.
 
 \bibitem{Implman}
 {SWAN -- Implementation manual}. Delft University of Technology, Environmental Fluid Mechanics Section, available from
-\hl{http://www.swan.tudelft.nl} (Version 40.81, June 2010).
+\hl{http://www.swan.tudelft.nl} (Version 40.85, May 2011).
 
 \bibitem{Progrul}
 {SWAN -- Programming rules}. Delft University of Technology, Environmental Fluid Mechanics Section, available from
@@ -5212,7 +5218,7 @@ For nonstationary computations repeat from VVV.
 
 \bibitem{Techdoc}
 {SWAN -- Scientific and Technical documentation}. Delft University of Technology, Environmental Fluid Mechanics Section, available from
-\hl{http://www.swan.tudelft.nl} (Version 40.81, June 2010).
+\hl{http://www.swan.tudelft.nl} (Version 40.85, May 2011).
 
 \end{thebibliography}
 
@@ -5224,20 +5230,21 @@ For nonstationary computations repeat from VVV.
 
   \item bathymetry, \hyperpage{5}, \hyperpage{10, 11}, \hyperpage{65},
 		\hyperpage{87}
-  \item BLOCK, \hyperpage{75}
+  \item BLOCK, \hyperpage{76}
   \item bottom, \hyperpage{3}, \hyperpage{8--13}, \hyperpage{16},
 		\hyperpage{18, 19}, \hyperpage{21, 22}, \hyperpage{24},
 		\hyperpage{34, 35}, \hyperpage{38--40}, \hyperpage{53},
 		\hyperpage{55, 56}, \hyperpage{59, 60},
-		\hyperpage{67, 68}, \hyperpage{70}, \hyperpage{80, 81},
-		\hyperpage{87}, \hyperpage{94}, \hyperpage{96}
+		\hyperpage{67, 68}, \hyperpage{70, 71},
+		\hyperpage{80--82}, \hyperpage{87, 88}, \hyperpage{94},
+		\hyperpage{96}
   \item BOUND SHAPE, \hyperpage{42}
   \item boundary, \hyperpage{1}, \hyperpage{3}, \hyperpage{6--14},
 		\hyperpage{22}, \hyperpage{26}, \hyperpage{28},
 		\hyperpage{30}, \hyperpage{32}, \hyperpage{42--51},
 		\hyperpage{54}, \hyperpage{59}, \hyperpage{62},
-		\hyperpage{67}, \hyperpage{71}, \hyperpage{73},
-		\hyperpage{84, 85}, \hyperpage{88}
+		\hyperpage{67}, \hyperpage{69}, \hyperpage{72, 73},
+		\hyperpage{85, 86}, \hyperpage{89}
   \item BOUNDNEST1, \hyperpage{47}
   \item BOUNDNEST2, \hyperpage{48}
   \item BOUNDNEST3, \hyperpage{49}
@@ -5245,16 +5252,16 @@ For nonstationary computations repeat from VVV.
   \item BREAKING, \hyperpage{55}
   \item breaking, \hyperpage{11}, \hyperpage{16--18}, \hyperpage{22},
 		\hyperpage{53}, \hyperpage{55}, \hyperpage{57},
-		\hyperpage{62}, \hyperpage{81}, \hyperpage{87},
+		\hyperpage{62}, \hyperpage{81}, \hyperpage{87, 88},
 		\hyperpage{94}
 
   \indexspace
 
-  \item Cartesian, \hyperpage{3}, \hyperpage{7, 8}, \hyperpage{21},
+  \item Cartesian, \hyperpage{4}, \hyperpage{7, 8}, \hyperpage{21},
 		\hyperpage{26, 27}, \hyperpage{29}, \hyperpage{36},
 		\hyperpage{42}, \hyperpage{44}, \hyperpage{46},
 		\hyperpage{48--51}, \hyperpage{60}, \hyperpage{68--72},
-		\hyperpage{74, 75}, \hyperpage{79}, \hyperpage{87},
+		\hyperpage{75}, \hyperpage{80}, \hyperpage{87},
 		\hyperpage{92}, \hyperpage{96}, \hyperpage{108},
 		\hyperpage{110, 111}
   \item CGRID, \hyperpage{28}
@@ -5271,12 +5278,12 @@ For nonstationary computations repeat from VVV.
 		\hyperpage{65, 66}, \hyperpage{68}, \hyperpage{80, 81},
 		\hyperpage{85}, \hyperpage{92}
   \item CURVE, \hyperpage{69}
-  \item curvi-linear, \hyperpage{3}, \hyperpage{6}, \hyperpage{8, 9},
+  \item curvi-linear, \hyperpage{3, 4}, \hyperpage{6}, \hyperpage{8, 9},
 		\hyperpage{13, 14}, \hyperpage{16}, \hyperpage{21, 22},
-		\hyperpage{29}, \hyperpage{31, 32}, \hyperpage{34},
-		\hyperpage{36}, \hyperpage{38, 39}, \hyperpage{44},
-		\hyperpage{47, 48}, \hyperpage{50}, \hyperpage{63},
-		\hyperpage{67, 68}, \hyperpage{70}
+		\hyperpage{29}, \hyperpage{31, 32}, \hyperpage{34, 35},
+		\hyperpage{38, 39}, \hyperpage{44}, \hyperpage{47, 48},
+		\hyperpage{50}, \hyperpage{63}, \hyperpage{67, 68},
+		\hyperpage{70}
 
   \indexspace
 
@@ -5301,14 +5308,14 @@ For nonstationary computations repeat from VVV.
 		\hyperpage{14, 15}, \hyperpage{26}, \hyperpage{30, 31},
 		\hyperpage{42}, \hyperpage{45}, \hyperpage{51},
 		\hyperpage{53--57}, \hyperpage{62}, \hyperpage{65--67},
-		\hyperpage{73--75}, \hyperpage{80}, \hyperpage{84, 85},
-		\hyperpage{87}, \hyperpage{91}, \hyperpage{93},
-		\hyperpage{110, 111}
+		\hyperpage{73}, \hyperpage{75}, \hyperpage{80},
+		\hyperpage{85}, \hyperpage{87, 88}, \hyperpage{91},
+		\hyperpage{93}, \hyperpage{110, 111}
   \item FRICTION, \hyperpage{55}
   \item friction, \hyperpage{9--12}, \hyperpage{16--19},
 		\hyperpage{21, 22}, \hyperpage{24}, \hyperpage{34, 35},
 		\hyperpage{39}, \hyperpage{53}, \hyperpage{55, 56},
-		\hyperpage{80, 81}, \hyperpage{87}, \hyperpage{94}
+		\hyperpage{80, 81}, \hyperpage{87, 88}, \hyperpage{94}
   \item Froude, \hyperpage{27}, \hyperpage{39}
 
   \indexspace
@@ -5370,12 +5377,12 @@ For nonstationary computations repeat from VVV.
 
   \indexspace
 
-  \item plant, \hyperpage{57}, \hyperpage{81}
+  \item plant, \hyperpage{57}, \hyperpage{82}
   \item POINTS, \hyperpage{71}
   \item PROJECT, \hyperpage{24}
   \item PROP, \hyperpage{62}
   \item propagation, \hyperpage{6}, \hyperpage{12}, \hyperpage{22},
-		\hyperpage{58}, \hyperpage{62, 63}, \hyperpage{80},
+		\hyperpage{58}, \hyperpage{62, 63}, \hyperpage{81},
 		\hyperpage{94}
 
   \indexspace
@@ -5387,7 +5394,7 @@ For nonstationary computations repeat from VVV.
 
   \indexspace
 
-  \item RAY, \hyperpage{69}
+  \item RAY, \hyperpage{70}
   \item READGRID COORDINATES, \hyperpage{31}
   \item READGRID UNSTRUCTURED, \hyperpage{32}
   \item READINP, \hyperpage{38}
@@ -5398,7 +5405,8 @@ For nonstationary computations repeat from VVV.
 		\hyperpage{65}, \hyperpage{70}
   \item regular, \hyperpage{4}, \hyperpage{8, 9}, \hyperpage{16},
 		\hyperpage{22}, \hyperpage{28, 29}, \hyperpage{31, 32},
-		\hyperpage{34, 35}, \hyperpage{63}, \hyperpage{66, 67}
+		\hyperpage{34, 35}, \hyperpage{63}, \hyperpage{66, 67},
+		\hyperpage{69}
 
   \indexspace
 
@@ -5411,7 +5419,7 @@ For nonstationary computations repeat from VVV.
   \item SORDUP, \hyperpage{63}
   \item SPECOUT, \hyperpage{84}
   \item specular, \hyperpage{60}
-  \item spherical, \hyperpage{3--5}, \hyperpage{8, 9}, \hyperpage{21},
+  \item spherical, \hyperpage{4, 5}, \hyperpage{8, 9}, \hyperpage{21},
 		\hyperpage{25}, \hyperpage{27--29}, \hyperpage{32},
 		\hyperpage{36}, \hyperpage{46}, \hyperpage{48--51},
 		\hyperpage{60}, \hyperpage{68--72}, \hyperpage{82},
@@ -5422,17 +5430,17 @@ For nonstationary computations repeat from VVV.
 		\hyperpage{20, 21}, \hyperpage{26, 27},
 		\hyperpage{34, 35}, \hyperpage{37--39}, \hyperpage{46},
 		\hyperpage{51, 52}, \hyperpage{54}, \hyperpage{63--65},
-		\hyperpage{70}, \hyperpage{82}, \hyperpage{88, 89},
+		\hyperpage{71}, \hyperpage{82}, \hyperpage{88, 89},
 		\hyperpage{105}, \hyperpage{108}, \hyperpage{110, 111}
-  \item steepness, \hyperpage{54}, \hyperpage{81}, \hyperpage{95}
-  \item STOP, \hyperpage{89}
+  \item steepness, \hyperpage{54}, \hyperpage{82}, \hyperpage{95}
+  \item STOP, \hyperpage{90}
   \item swell, \hyperpage{12}, \hyperpage{15}, \hyperpage{56},
-		\hyperpage{63}, \hyperpage{74, 75}, \hyperpage{79},
+		\hyperpage{63}, \hyperpage{75}, \hyperpage{80},
 		\hyperpage{91}
 
   \indexspace
 
-  \item TABLE, \hyperpage{82}
+  \item TABLE, \hyperpage{83}
   \item TEST, \hyperpage{86}
   \item TRIAD, \hyperpage{56}
   \item triads, \hyperpage{16}, \hyperpage{56}, \hyperpage{81},
@@ -5445,8 +5453,8 @@ For nonstationary computations repeat from VVV.
 		\hyperpage{12}, \hyperpage{21}, \hyperpage{29},
 		\hyperpage{32}, \hyperpage{35, 36}, \hyperpage{44},
 		\hyperpage{59}, \hyperpage{61}, \hyperpage{63},
-		\hyperpage{65}, \hyperpage{67}, \hyperpage{72},
-		\hyperpage{79}
+		\hyperpage{65}, \hyperpage{67}, \hyperpage{69},
+		\hyperpage{72}, \hyperpage{79}
 
   \indexspace
 
@@ -5459,19 +5467,19 @@ For nonstationary computations repeat from VVV.
   \item WAM, \hyperpage{4--7}, \hyperpage{9, 10}, \hyperpage{15},
 		\hyperpage{18}, \hyperpage{22}, \hyperpage{37},
 		\hyperpage{46}, \hyperpage{48, 49}, \hyperpage{54},
-		\hyperpage{82}, \hyperpage{84--86}, \hyperpage{88}
+		\hyperpage{83--86}, \hyperpage{89}
   \item WAVEWATCH, \hyperpage{4--7}, \hyperpage{9, 10}, \hyperpage{15},
 		\hyperpage{22}, \hyperpage{46}, \hyperpage{50}
   \item whitecapping, \hyperpage{7}, \hyperpage{16}, \hyperpage{53, 54},
-		\hyperpage{62}, \hyperpage{81}, \hyperpage{87},
+		\hyperpage{62}, \hyperpage{81}, \hyperpage{87, 88},
 		\hyperpage{94}
   \item WIND, \hyperpage{41}
   \item wind, \hyperpage{3}, \hyperpage{5}, \hyperpage{7--12},
 		\hyperpage{14--19}, \hyperpage{21}, \hyperpage{26},
 		\hyperpage{34, 35}, \hyperpage{39}, \hyperpage{41, 42},
 		\hyperpage{51--54}, \hyperpage{56}, \hyperpage{62, 63},
-		\hyperpage{65, 66}, \hyperpage{80}, \hyperpage{87, 88},
-		\hyperpage{94}, \hyperpage{96}
+		\hyperpage{65, 66}, \hyperpage{80, 81},
+		\hyperpage{87, 88}, \hyperpage{94}, \hyperpage{96}
 
 \end{theindex}
 

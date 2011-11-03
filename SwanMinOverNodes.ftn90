@@ -1,4 +1,4 @@
-module SwanCompdata
+subroutine SwanMinOverNodes ( rval )
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
@@ -31,44 +31,54 @@ module SwanCompdata
 !
 !   Authors
 !
-!   40.80: Marcel Zijlema
-!   40.92: Marcel Zijlema
+!   40.95: Marcel Zijlema
 !
 !   Updates
 !
-!   40.80, July 2007: New Module
-!   40.92, June 2008: changes with respect to boundary polygons
+!   40.95, July 2008: New subroutine
 !
 !   Purpose
 !
-!   Module containing data for computation with unstructured grid
-!
-!   Method
-!
-!   Data based on unstructured grid
+!   Performs a global minimum of reals over all nodes
 !
 !   Modules used
 !
-    use swcomm3
+    use ocpcomm4
+!PUN    use SIZES, only: MNPROC
+!PUN    use GLOBAL, only: COMM
+!PUN    use MESSENGER, only: IERR
+!PUN    use mpi
 !
     implicit none
 !
-!   Module parameters
+!   Argument variables
 !
+    real, intent(inout)     :: rval     ! input value
 !
-!   Module variables
+!   Local variables
 !
-    integer                                    :: nbpol  ! total number of boundary polygons
-    integer, dimension(10000)                  :: nbpt   ! number of boundary vertices for each boundary polygon
+    integer                 :: count    ! length of array to be collect
+    integer, save           :: ient = 0 ! number of entries in this subroutine
+    real                    :: minval   ! minimum of all input values from all subdomains
 !
-    integer, dimension(MICMAX)                 :: vs     ! computational stencil, i.e. set of vertices
-                                                         ! needed for the computation of a new value
-                                                         ! in the present vertex
-!$omp threadprivate(vs)
+!   Structure
 !
-    integer, dimension(:,:), save, allocatable :: blist  ! list of boundary vertices in ascending order for each boundary polygon
-    integer, dimension(:)  , save, allocatable :: vlist  ! vertex list
+!   Description of the pseudo code
 !
 !   Source text
 !
-end module SwanCompdata
+    if (ltrace) call strace (ient,'SwanMinOverNodes')
+    !
+    ! if not parallel, return
+    !
+!PUN    if ( MNPROC==1 ) return
+    !
+!TIMG    call SWTSTA(202)
+    minval = 0.
+    count  = 1
+!PUN    call MPI_ALLREDUCE ( rval, minval, count, MPI_REAL, MPI_MIN, COMM, IERR )
+    !
+    rval = minval
+!TIMG    call SWTSTO(202)
+    !
+end subroutine SwanMinOverNodes

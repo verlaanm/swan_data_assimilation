@@ -7,6 +7,7 @@
 # To compile the serial executable type "make ser"
 # To compile the OpenMP executable type "make omp"
 # To compile the MPI executable type "make mpi"
+# To compile the PunSWAN executable "make punswan"
 #
 # To remove compiled objects and modules: type "make clean"
 #
@@ -81,6 +82,11 @@ SwanFindObstacles.$(EXTO) \
 SwanCrossObstacle.$(EXTO) \
 SwanComputeForce.$(EXTO) \
 SwanIntgratSpc.$(EXTO) \
+SwanBndStruc.$(EXTO) \
+SwanReadfort18.$(EXTO) \
+SwanSumOverNodes.$(EXTO) \
+SwanMinOverNodes.$(EXTO) \
+SwanMaxOverNodes.$(EXTO) \
 ocpids.$(EXTO) \
 ocpcre.$(EXTO) \
 ocpmix.$(EXTO)
@@ -88,9 +94,17 @@ ocpmix.$(EXTO)
 HCAT_EXE = hcat.exe
 HCAT_OBJS = swanhcat.$(EXTO)
 
-.SUFFIXES: .o .f .for .f90
+MSG_OBJS = \
+$(O_DIR)mkdir.$(EXTO) \
+$(O_DIR)sizes.$(EXTO) \
+$(O_DIR)global.$(EXTO) \
+$(O_DIR)global_3dvs.$(EXTO) \
+$(O_DIR)version.$(EXTO) \
+$(O_DIR)messenger.$(EXTO)
 
-.PHONEY: help clean clobber
+.SUFFIXES: .f .for .f90
+
+.PHONY: help clean clobber
 
 help:
 	@echo "This Makefile supports the following:"
@@ -98,6 +112,7 @@ help:
 	@echo "make ser       -- makes the serial $(SWAN_EXE) executable"
 	@echo "make omp       -- makes the OpenMP $(SWAN_EXE) executable"
 	@echo "make mpi       -- makes the    MPI $(SWAN_EXE) executable"
+	@echo "make punswan   -- makes the parallel un$(SWAN_EXE) executable"
 	@echo "make doc       -- makes the SWAN documentation (PDF)"
 	@echo "make clean     -- removes compiled objects and modules"
 	@echo "make clobber   -- removes compiled objects, modules and $(SWAN_EXE)"
@@ -113,21 +128,29 @@ ser:
 	@perl switch.pl $(swch) *.ftn *.ftn90
 	$(MAKE) FOR=$(F90_SER) FFLAGS="$(FLAGS_OPT) $(FLAGS_MSC) $(FLAGS_SER)" \
 	        FFLAGS90="$(FLAGS_OPT) $(FLAGS90_MSC) $(FLAGS_SER)" \
-                INCS="$(INCS_SER)" LIBS="$(LIBS_SER)" $(SWAN_EXE)
+                INCS="$(INCS_SER)" LIBS="$(LIBS_SER)" OBJS="$(SWAN_OBJS)" $(SWAN_EXE)
 	$(MAKE) hcat
 
 omp:
 	@perl switch.pl $(swch) *.ftn *.ftn90
 	$(MAKE) FOR=$(F90_OMP) FFLAGS="$(FLAGS_OPT) $(FLAGS_MSC) $(FLAGS_OMP)" \
 	        FFLAGS90="$(FLAGS_OPT) $(FLAGS90_MSC) $(FLAGS_OMP)" \
-                INCS="$(INCS_OMP)" LIBS="$(LIBS_OMP)" $(SWAN_EXE)
+                INCS="$(INCS_OMP)" LIBS="$(LIBS_OMP)" OBJS="$(SWAN_OBJS)" $(SWAN_EXE)
 	$(MAKE) hcat
 
 mpi:
 	@perl switch.pl $(swch) -mpi *.ftn *.ftn90
 	$(MAKE) FOR=$(F90_MPI) FFLAGS="$(FLAGS_OPT) $(FLAGS_MSC) $(FLAGS_MPI)" \
 	        FFLAGS90="$(FLAGS_OPT) $(FLAGS90_MSC) $(FLAGS_MPI)" \
-                INCS="$(INCS_MPI)" LIBS="$(LIBS_MPI)" $(SWAN_EXE)
+                INCS="$(INCS_MPI)" LIBS="$(LIBS_MPI)" OBJS="$(SWAN_OBJS)" $(SWAN_EXE)
+	$(MAKE) hcat
+
+punswan:
+	@perl switch.pl $(swch) -pun *.ftn *.ftn90
+	$(MAKE) FOR=$(F90_MPI) FFLAGS="$(FLAGS_OPT) $(FLAGS_MSC) $(FLAGS_MPI)" \
+                FFLAGS90="$(FLAGS_OPT) $(FLAGS90_MSC) $(FLAGS_MPI)" \
+                INCS="$(INCS_MPI) -I$(O_DIR)" LIBS="$(LIBS_MPI)" \
+                OBJS="$(MSG_OBJS) $(SWAN_OBJS)" $(SWAN_EXE)
 	$(MAKE) hcat
 
 hcat:
@@ -146,7 +169,7 @@ $(HCAT_EXE): $(HCAT_OBJS)
 	$(FOR) $(HCAT_OBJS) $(FFLAGS) $(OUT)$(HCAT_EXE)
 
 $(SWAN_EXE): $(SWAN_OBJS)
-	$(FOR) $(SWAN_OBJS) $(FFLAGS) $(OUT)$(SWAN_EXE) $(INCS) $(LIBS)
+	$(FOR) $(OBJS) $(FFLAGS) $(OUT)$(SWAN_EXE) $(INCS) $(LIBS)
 
 .f.o:
 	$(FOR) $< -c $(FFLAGS) $(INCS)
